@@ -160,3 +160,6 @@ cython_debug/
 #.idea/
 
 VERSION
+
+#This Plugin stores critical secrets in fils like this.
+.cache-*
