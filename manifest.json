@@ -1,6 +1,15 @@
 {
-    "version": "",
+    "version": "0.0.1-alpha",
     "thumbnail": "",
-    "id": "",
-    "name": ""
+    "id": "com_ReneLu_spotifyControl",
+    "name": "Spotify Control",
+    "author": "René Luellau",
+    "github": "https://github.com/ReneLu/SpotifyControl",
+    "descriptions": {
+      "en_US": "Control your Spotify from your Stream Deck. Play, pause, skip tracks, and more."
+    },
+    "short-descriptions": {
+      "en_US": "Control your Spotify from your Stream Deck. Play, pause, skip tracks, and more."
+    },
+  "tags": ["Spotify","Music","Control", "Multimdia"]
 }
