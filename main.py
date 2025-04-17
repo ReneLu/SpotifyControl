@@ -15,10 +15,6 @@ class SpotifyControl(PluginBase):
         self.lm = self.locale_manager
         self.lm.set_to_os_default()
 
-        # Get general settings
-        self._settings_manager = PluginSettings(self)
-        self.has_plugin_settings = True
-
         ## Launch backend
         backend_path = os.path.join(self.PATH, "backend", "backend.py")
         self.launch_backend(backend_path=backend_path, open_in_terminal=False,
@@ -40,6 +36,10 @@ class SpotifyControl(PluginBase):
             plugin_version = "0.0.1-alpha",
             app_version = "1.1.1-alpha"
         )
+
+        # Get general settings
+        self._settings_manager = PluginSettings(self)
+        self.has_plugin_settings = True
 
     def get_settings_area(self):
         return self._settings_manager.get_settings_area()
