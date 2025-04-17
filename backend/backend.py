@@ -16,7 +16,7 @@ class SpotifyControlBackend(BackendBase):
 
     def __init__(self):
         super().__init__()
-        log.debug("Initialize SpotifyControlBackend")
+        log.info("Initialize SpotifyControlBackend")
         # Get the username from terminal
         username = "killerawft"
         scope = 'user-read-private user-read-playback-state user-modify-playback-state'
@@ -27,10 +27,10 @@ class SpotifyControlBackend(BackendBase):
             os.remove(f".cache-{username}")
             token = util.prompt_for_user_token(username, scope) # add scope
 
-        log.debug("Token created")
+        log.info("Token created")
         # Create our spotify object with permissions
         self.spotifyObject = spotipy.Spotify(auth=token)
-        log.debug("SpotifyControlBackend started")
+        log.info("SpotifyControlBackend started")
 
     def get_spotify_object(self):
         """
@@ -47,7 +47,7 @@ class SpotifyControlBackend(BackendBase):
         for item in devices:
             if item['is_active']:
                 deviceID = item['id']
-                log.debug("Current active device " + str(item['name'] +
+                log.info("Current active device " + str(item['name'] +
                           " with ID " + str(self.deviceID)))
                 return deviceID
         return None
@@ -58,9 +58,9 @@ class SpotifyControlBackend(BackendBase):
         """
         deviceList = self.spotifyObject.devices()
         deviceList = deviceList['devices']
-        log.debug("Devices: " + str(deviceList))
+        log.info("Devices: " + str(deviceList))
 
         return deviceList
 
 backend = SpotifyControlBackend()
-log.debug("SpotifyControlBackend initialized")
+log.info("SpotifyControlBackend initialized")
