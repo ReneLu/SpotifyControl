@@ -6,7 +6,7 @@ from src.backend.PluginManager.ActionHolder import ActionHolder
 
 # Import actions
 from .actions.shuffle import ShuffleAction
-from settings import PluginSettings
+from .settings import PluginSettings
 
 class SpotifyControl(PluginBase):
     def __init__(self):
