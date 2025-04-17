@@ -13,24 +13,17 @@ from loguru import logger as log
 class SpotifyControlBackend(BackendBase):
 
     spotifyObject = None
+    is_authed = False
+
+    # User Credetials
+    client_id = None
+    client_secret = None
+    client_uri = None
+    username = None
 
     def __init__(self):
         super().__init__()
         log.info("Initialize SpotifyControlBackend")
-        # Get the username from terminal
-        username = "killerawft"
-        scope = 'user-read-private user-read-playback-state user-modify-playback-state'
-        # Erase cache and prompt for user permission
-        try:
-            token = util.prompt_for_user_token(username, scope) # add scope
-        except (AttributeError, JSONDecodeError):
-            os.remove(f".cache-{username}")
-            token = util.prompt_for_user_token(username, scope) # add scope
-
-        log.info("Token created")
-        # Create our spotify object with permissions
-        self.spotifyObject = spotipy.Spotify(auth=token)
-        log.info("SpotifyControlBackend started")
 
     def get_spotify_object(self):
         """
@@ -61,6 +54,36 @@ class SpotifyControlBackend(BackendBase):
         log.info("Devices: " + str(deviceList))
 
         return deviceList
+
+    def update_client_credentials(self, client_id: str, client_secret: str, client_uri: str = "", username: str = ""):
+        if None in (client_id, client_secret, client_uri, username) or "" in (client_id, client_secret, client_uri, username):
+            self.frontend.on_auth_callback(
+                False, "actions.base.credentials.missing_client_info")
+            return
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.client_uri = client_uri
+        self.username = username
+        self.setup_client()
+
+    def setup_client(self):
+        """
+        Setup the client
+        """
+        scope = "user-read-playback-state user-modify-playback-state user-read-currently-playing"
+        self.spotifyObject = spotipy.Spotify(
+            auth_manager=SpotifyOAuth(client_id=self.client_id,
+                                      client_secret=self.client_secret,
+                                      redirect_uri=self.client_uri,
+                                      scope=scope))
+        self.is_authed = True
+        log.info("SpotifyControlBackend setup complete")
+
+    def is_authed(self) -> bool:
+        """
+        Check if the user is authenticated
+        """
+        return self.is_authed
 
 backend = SpotifyControlBackend()
 log.info("SpotifyControlBackend initialized")

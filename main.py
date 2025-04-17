@@ -6,10 +6,18 @@ from src.backend.PluginManager.ActionHolder import ActionHolder
 
 # Import actions
 from .actions.shuffle import ShuffleAction
+from settings import PluginSettings
 
 class SpotifyControl(PluginBase):
     def __init__(self):
         super().__init__()
+
+        self.lm = self.locale_manager
+        self.lm.set_to_os_default()
+
+        # Get general settings
+        self._settings_manager = PluginSettings(self)
+        self.has_plugin_settings = True
 
         ## Launch backend
         backend_path = os.path.join(self.PATH, "backend", "backend.py")
