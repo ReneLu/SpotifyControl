@@ -12,8 +12,9 @@ class SpotifyControl(PluginBase):
         super().__init__()
 
         ## Launch backend
-        backend_path = os.path.join(self.PATH, "backend.py")
-        self.launch_backend(backend_path=backend_path, open_in_terminal=False)
+        backend_path = os.path.join(self.PATH, "backend", "backend.py")
+        self.launch_backend(backend_path=backend_path, open_in_terminal=False,
+                            venv_path=os.path.join(self.PATH, "backend", '.venv'))
 
         ## Register actions
         self.shuffle_action_holder = ActionHolder(
