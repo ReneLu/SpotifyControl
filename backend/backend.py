@@ -35,9 +35,7 @@ class SpotifyControlBackend(BackendBase):
         """
         Get the active device ID
         """
-        devices = self.spotifyObject.devices()
-        devices = devices['devices']
-        for item in devices:
+        for item in self.get_devices():
             if item['is_active']:
                 deviceID = item['id']
                 log.info("Current active device " + str(item['name'] +
