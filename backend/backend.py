@@ -53,15 +53,14 @@ class SpotifyControlBackend(BackendBase):
 
         return deviceList
 
-    def update_client_credentials(self, client_id: str, client_secret: str, client_uri: str = "", username: str = ""):
-        if None in (client_id, client_secret, client_uri, username) or "" in (client_id, client_secret, client_uri, username):
+    def update_client_credentials(self, client_id: str, client_secret: str, client_uri: str = ""):
+        if None in (client_id, client_secret, client_uri) or "" in (client_id, client_secret, client_uri):
             self.frontend.on_auth_callback(
                 False, "actions.base.credentials.missing_client_info")
             return
         self.client_id = client_id
         self.client_secret = client_secret
         self.client_uri = client_uri
-        self.username = username
         self.setup_client()
 
     def setup_client(self):

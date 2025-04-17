@@ -11,7 +11,6 @@ gi.require_version("Adw", "1")
 KEY_CLIENT_SECRET = "client_secret"
 KEY_CLIENT_ID = "client_id"
 KEY_CLIENT_REDIRECT_URI = "client_redirect_uri"
-KEY_USERNAME = "username"
 
 
 class PluginSettings:
@@ -19,7 +18,6 @@ class PluginSettings:
     _client_id: Adw.EntryRow
     _client_secret: Adw.PasswordEntryRow
     _client_uri: Adw.EntryRow
-    _username: Adw.EntryRow
     _auth_button: Gtk.Button
 
     def __init__(self, plugin_base: PluginBase):
@@ -33,15 +31,13 @@ class PluginSettings:
             self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
                 "actions.base.credentials.authenticated"), css_classes=["spotify-controller-green"])
 
-        # Create client id, secret, username and redirect uri entry rows
+        # Create client id, secret and redirect uri entry rows
         self._client_id = Adw.EntryRow(
             title=self._plugin_base.lm.get("actions.base.client_id"))
         self._client_secret = Adw.PasswordEntryRow(
             title=self._plugin_base.lm.get("actions.base.client_secret"))
         self._client_uri = Adw.EntryRow(
             title=self._plugin_base.lm.get("actions.base.client_uri"))
-        self._username = Adw.EntryRow(
-            title=self._plugin_base.lm.get("actions.base.username"))
 
         # Create validate button
         self._auth_button = Gtk.Button(
@@ -54,7 +50,6 @@ class PluginSettings:
         self._client_secret.connect(
             "notify::text", self._on_change_client_secret)
         self._client_uri.connect("notify::text", self._on_change_client_uri)
-        self._username.connect("notify::text", self._on_change_username)
         self._auth_button.connect("clicked", self._on_auth_clicked)
 
         # Crete info
@@ -73,7 +68,6 @@ class PluginSettings:
         pref_group.add(self._client_id)
         pref_group.add(self._client_secret)
         pref_group.add(self._client_uri)
-        pref_group.add(self._username)
         pref_group.add(self._auth_button)
         pref_group.add(gh_label)
         return pref_group
@@ -83,12 +77,10 @@ class PluginSettings:
         client_id = settings.get(KEY_CLIENT_ID, "")
         client_secret = settings.get(KEY_CLIENT_SECRET, "")
         client_uri = settings.get(KEY_CLIENT_REDIRECT_URI, "")
-        username = settings.get(KEY_USERNAME, "")
 
         self._client_id.set_text(client_id)
         self._client_secret.set_text(client_secret)
         self._client_uri.set_text(client_uri)
-        self._username.set_text(username)
 
     def _update_status(self, message: str, is_error: bool):
         style = "spotify-controller-red" if is_error else "spotify-controller-green"
@@ -115,11 +107,6 @@ class PluginSettings:
         self._update_settings(KEY_CLIENT_REDIRECT_URI, val)
         self._enable_auth()
 
-    def _on_change_username(self, entry, _):
-        val = entry.get_text().strip()
-        self._update_settings(KEY_USERNAME, val)
-        self._enable_auth()
-
     def _on_auth_clicked(self, _):
         if not self._plugin_base.backend:
             self._update_status("Failed to load backend", True)
@@ -128,10 +115,9 @@ class PluginSettings:
         client_id = settings.get(KEY_CLIENT_ID)
         client_secret = settings.get(KEY_CLIENT_SECRET)
         client_uri = settings.get(KEY_CLIENT_REDIRECT_URI)
-        username = settings.get(KEY_USERNAME)
         self._plugin_base.auth_callback_fn = self._on_auth_completed
         self._plugin_base.backend.update_client_credentials(
-            client_id, client_secret, client_uri, username)
+            client_id, client_secret, client_uri)
 
     def _enable_auth(self):
         settings = self._plugin_base.get_settings()
