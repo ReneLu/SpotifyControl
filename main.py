@@ -40,3 +40,6 @@ class SpotifyControl(PluginBase):
             plugin_version = "0.0.1-alpha",
             app_version = "1.1.1-alpha"
         )
+
+    def get_settings_area(self):
+        return self._settings_manager.get_settings_area()
