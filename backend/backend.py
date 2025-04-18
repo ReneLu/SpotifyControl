@@ -74,8 +74,13 @@ class SpotifyControlBackend(BackendBase):
                                       redirect_uri=self.client_uri,
                                       scope=scope,
                                       open_browser=False))
-        self.is_authed = True
-        log.info("SpotifyControlBackend setup complete")
+
+        if self.spotifyObject:
+            self.is_authed = True
+            log.info("Spotify client setup complete")
+        else:
+            self.is_authed = False
+            log.error("Spotify client setup failed")
 
     def is_authed(self) -> bool:
         """
