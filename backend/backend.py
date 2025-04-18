@@ -72,7 +72,8 @@ class SpotifyControlBackend(BackendBase):
             auth_manager=SpotifyOAuth(client_id=self.client_id,
                                       client_secret=self.client_secret,
                                       redirect_uri=self.client_uri,
-                                      scope=scope))
+                                      scope=scope,
+                                      open_browser=False))
         self.is_authed = True
         log.info("SpotifyControlBackend setup complete")
 
