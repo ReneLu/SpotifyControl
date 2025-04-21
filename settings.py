@@ -9,13 +9,13 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
 KEY_CLIENT_ID = "client_id"
-KEY_CLIENT_REDIRECT_URI = "client_redirect_uri"
+KEY_PORT_REDIRECT_URI = "port_redirect_uri"
 
 
 class PluginSettings:
     _status_label: Gtk.Label
     _client_id: Adw.EntryRow
-    _port: Adw.EntryRow
+    _port: Adw.SpinRow
     _auth_button: Gtk.Button
 
     def __init__(self, plugin_base: PluginBase):
@@ -32,8 +32,9 @@ class PluginSettings:
         # Create client id, secret and redirect uri entry rows
         self._client_id = Adw.EntryRow(
             title=self._plugin_base.lm.get("actions.base.client_id"))
-        self._port = Adw.EntryRow(
-            title=self._plugin_base.lm.get("actions.base.port"))
+        self._port = Adw.SpinRow(
+            title=self._plugin_base.lm.get("actions.base.port"), \
+            subtitle=self._plugin_base.lm.get("actions.base.port_default"))
 
         # Create validate button
         self._auth_button = Gtk.Button(
@@ -43,7 +44,7 @@ class PluginSettings:
 
         # Connect signals
         self._client_id.connect("notify::text", self._on_change_client_id)
-        self._port.connect("notify::text", self._on_change_port)
+        self._port.connect("changed", self._on_change_port)
         self._auth_button.connect("clicked", self._on_auth_clicked)
 
         # Crete info
@@ -68,7 +69,7 @@ class PluginSettings:
     def _load_settings(self):
         settings = self._plugin_base.get_settings()
         client_id = settings.get(KEY_CLIENT_ID, "")
-        port = settings.get(KEY_CLIENT_REDIRECT_URI, "")
+        port = settings.get(KEY_PORT_REDIRECT_URI, "")
 
         self._client_id.set_text(client_id)
         self._port.set_text(port)
@@ -89,8 +90,8 @@ class PluginSettings:
         self._enable_auth()
 
     def _on_change_port(self, entry, _):
-        val = entry.get_text().strip()
-        self._update_settings(KEY_CLIENT_REDIRECT_URI, val)
+        val = entry.get_value()
+        self._update_settings(KEY_PORT_REDIRECT_URI, val)
         self._enable_auth()
 
     def _on_auth_clicked(self, _):
@@ -99,7 +100,7 @@ class PluginSettings:
             return
         settings = self._plugin_base.get_settings()
         client_id = settings.get(KEY_CLIENT_ID)
-        port = settings.get(KEY_CLIENT_REDIRECT_URI)
+        port = settings.get(KEY_PORT_REDIRECT_URI)
         self._plugin_base.auth_callback_fn = self._on_auth_completed
         self._plugin_base.backend.update_client_credentials(client_id, port)
 
