@@ -13,11 +13,12 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Gtk, Adw
 
+import spotipy
 from loguru import logger as log
 
 class ShuffleAction(ActionBase):
 
-    spotifyObject = None
+    spotifyObject: spotipy.Spotify
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
