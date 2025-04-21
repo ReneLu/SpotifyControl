@@ -48,7 +48,7 @@ class PluginSettings:
         self._port.connect("changed", self._on_change_port)
         self._auth_button.connect("clicked", self._on_auth_clicked)
 
-        # Crete info
+        # Create info
         gh_link_label = self._plugin_base.lm.get("actions.info.link.label")
         gh_link_text = self._plugin_base.lm.get("actions.info.link.text")
         gh_label = Gtk.Label(
