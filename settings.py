@@ -32,9 +32,10 @@ class PluginSettings:
         # Create client id, secret and redirect uri entry rows
         self._client_id = Adw.EntryRow(
             title=self._plugin_base.lm.get("actions.base.client_id"))
-        self._port = Adw.SpinRow(
-            title=self._plugin_base.lm.get("actions.base.port"), \
-            subtitle=self._plugin_base.lm.get("actions.base.port_default"))
+        self._port = Adw.SpinRow.new_with_range(1024, 65535, 1)
+        self._port.set_title=self._plugin_base.lm.get("actions.base.port")
+        self._port.set_subtitle=self._plugin_base.lm.get("actions.base.port_default")
+        self._port.set_value(8080)
 
         # Create validate button
         self._auth_button = Gtk.Button(
