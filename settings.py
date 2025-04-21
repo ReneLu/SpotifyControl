@@ -8,7 +8,6 @@ from src.backend.PluginManager import PluginBase
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
-KEY_CLIENT_SECRET = "client_secret"
 KEY_CLIENT_ID = "client_id"
 KEY_CLIENT_REDIRECT_URI = "client_redirect_uri"
 
@@ -16,8 +15,7 @@ KEY_CLIENT_REDIRECT_URI = "client_redirect_uri"
 class PluginSettings:
     _status_label: Gtk.Label
     _client_id: Adw.EntryRow
-    _client_secret: Adw.PasswordEntryRow
-    _client_uri: Adw.EntryRow
+    _port: Adw.EntryRow
     _auth_button: Gtk.Button
 
     def __init__(self, plugin_base: PluginBase):
@@ -34,10 +32,8 @@ class PluginSettings:
         # Create client id, secret and redirect uri entry rows
         self._client_id = Adw.EntryRow(
             title=self._plugin_base.lm.get("actions.base.client_id"))
-        self._client_secret = Adw.PasswordEntryRow(
-            title=self._plugin_base.lm.get("actions.base.client_secret"))
-        self._client_uri = Adw.EntryRow(
-            title=self._plugin_base.lm.get("actions.base.client_uri"))
+        self._port = Adw.EntryRow(
+            title=self._plugin_base.lm.get("actions.base.port"))
 
         # Create validate button
         self._auth_button = Gtk.Button(
@@ -47,9 +43,7 @@ class PluginSettings:
 
         # Connect signals
         self._client_id.connect("notify::text", self._on_change_client_id)
-        self._client_secret.connect(
-            "notify::text", self._on_change_client_secret)
-        self._client_uri.connect("notify::text", self._on_change_client_uri)
+        self._port.connect("notify::text", self._on_change_port)
         self._auth_button.connect("clicked", self._on_auth_clicked)
 
         # Crete info
@@ -66,8 +60,7 @@ class PluginSettings:
             "actions.base.credentials.title"))
         pref_group.add(self._status_label)
         pref_group.add(self._client_id)
-        pref_group.add(self._client_secret)
-        pref_group.add(self._client_uri)
+        pref_group.add(self._port)
         pref_group.add(self._auth_button)
         pref_group.add(gh_label)
         return pref_group
@@ -75,12 +68,10 @@ class PluginSettings:
     def _load_settings(self):
         settings = self._plugin_base.get_settings()
         client_id = settings.get(KEY_CLIENT_ID, "")
-        client_secret = settings.get(KEY_CLIENT_SECRET, "")
-        client_uri = settings.get(KEY_CLIENT_REDIRECT_URI, "")
+        port = settings.get(KEY_CLIENT_REDIRECT_URI, "")
 
         self._client_id.set_text(client_id)
-        self._client_secret.set_text(client_secret)
-        self._client_uri.set_text(client_uri)
+        self._port.set_text(port)
 
     def _update_status(self, message: str, is_error: bool):
         style = "spotify-controller-red" if is_error else "spotify-controller-green"
@@ -97,12 +88,7 @@ class PluginSettings:
         self._update_settings(KEY_CLIENT_ID, val)
         self._enable_auth()
 
-    def _on_change_client_secret(self, entry, _):
-        val = entry.get_text().strip()
-        self._update_settings(KEY_CLIENT_SECRET, val)
-        self._enable_auth()
-
-    def _on_change_client_uri(self, entry, _):
+    def _on_change_port(self, entry, _):
         val = entry.get_text().strip()
         self._update_settings(KEY_CLIENT_REDIRECT_URI, val)
         self._enable_auth()
@@ -113,18 +99,14 @@ class PluginSettings:
             return
         settings = self._plugin_base.get_settings()
         client_id = settings.get(KEY_CLIENT_ID)
-        client_secret = settings.get(KEY_CLIENT_SECRET)
-        client_uri = settings.get(KEY_CLIENT_REDIRECT_URI)
+        port = settings.get(KEY_CLIENT_REDIRECT_URI)
         self._plugin_base.auth_callback_fn = self._on_auth_completed
-        self._plugin_base.backend.update_client_credentials(
-            client_id, client_secret, client_uri)
+        self._plugin_base.backend.update_client_credentials(client_id, port)
 
     def _enable_auth(self):
         settings = self._plugin_base.get_settings()
-        client_secret = settings.get(KEY_CLIENT_SECRET, "")
         client_id = settings.get(KEY_CLIENT_ID, "")
-        self._auth_button.set_sensitive(
-            len(client_id) > 0 and len(client_secret) > 0)
+        self._auth_button.set_sensitive(len(client_id) > 0)
 
     def _on_auth_completed(self, success: bool, message: str = ""):
         self._enable_auth()

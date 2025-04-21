@@ -1,25 +1,24 @@
 from streamcontroller_plugin_tools import BackendBase
 
 import os
-import sys
-import json
 import spotipy
-from spotipy.oauth2 import SpotifyOAuth
 import webbrowser
-import spotipy.util as util
-from json.decoder import JSONDecodeError
 from loguru import logger as log
+import flask_auth as flaskApp
 
 class SpotifyControlBackend(BackendBase):
 
+    cache_handler = None
+    auth_manager = None
     spotifyObject = None
-    is_authed = False
 
     # User Credetials
     client_id = None
-    client_secret = None
-    client_uri = None
+    port = None
+    redirect_uri = None
     username = None
+
+    scope = "user-read-playback-state user-modify-playback-state user-read-currently-playing"
 
     def __init__(self):
         super().__init__()
@@ -53,40 +52,49 @@ class SpotifyControlBackend(BackendBase):
 
         return deviceList
 
-    def update_client_credentials(self, client_id: str, client_secret: str, client_uri: str = ""):
-        if None in (client_id, client_secret, client_uri) or "" in (client_id, client_secret, client_uri):
+    def update_client_credentials(self, client_id: str, port: int):
+        if None in (client_id, port) or "" in (client_id, port):
             self.frontend.on_auth_callback(
                 False, "actions.base.credentials.missing_client_info")
             return
         self.client_id = client_id
-        self.client_secret = client_secret
-        self.client_uri = client_uri
+        self.port = port
+        self.redirect_uri = "http://127.0.0.1:" + str(port)
         self.setup_client()
 
     def setup_client(self):
         """
         Setup the client
         """
-        scope = "user-read-playback-state user-modify-playback-state user-read-currently-playing"
-        self.spotifyObject = spotipy.Spotify(
-            auth_manager=SpotifyOAuth(client_id=self.client_id,
-                                      client_secret=self.client_secret,
-                                      redirect_uri=self.client_uri,
-                                      scope=scope,
-                                      open_browser=False))
+        self.cache_handler = spotipy.cache_handler.CacheFileHandler(".cache")
+        self.auth_manager = spotipy.oauth2.SpotifyPKCE(scope=self.scope,
+                                                redirect_uri = self.redirect_uri,
+                                                client_id = self.client_id,
+                                                cache_handler=self.cache_handler,
+                                                open_browser=True)
 
-        if self.spotifyObject:
-            self.is_authed = True
-            log.info("Spotify client setup complete")
+        if os.path.isfile(".cache") and self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
+            self.auth_manager.get_access_token(".cache")
         else:
-            self.is_authed = False
-            log.error("Spotify client setup failed")
+            # Remove not valid token
+            if os.path.isfile(".cache"):
+                os.remove(".cache")
+            flaskApp.start_server(self.port)
+            webbrowser.open_new_tab(self.auth_manager.get_authorize_url())
+            # Wait for Token set from Flask Server
+            while not flaskApp.server.get_token():
+                pass
+            self.auth_manager.get_access_token(flaskApp.server.get_token())
 
+            flaskApp.stop_server()
+
+        self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
     def is_authed(self) -> bool:
         """
         Check if the user is authenticated
         """
-        return self.is_authed
+        return os.path.isfile(".cache") and \
+               self.auth_manager.validate_token(self.auth_manager.get_cached_token())
 
 backend = SpotifyControlBackend()
 log.info("SpotifyControlBackend initialized")
