@@ -27,13 +27,11 @@ class PluginSettings:
         self._plugin_base.backend.update_client_credentials(client_id, port)
 
     def get_settings_area(self) -> Adw.PreferencesGroup:
-        if not self._plugin_base.backend.is_authed():
-            self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
-                "actions.base.credentials.failed"), css_classes=["spotify-controller-red"])
-        else:
-            self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
-                "actions.base.credentials.authenticated"), css_classes=["spotify-controller-green"])
 
+        log.info("Creating settings area")
+
+        self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
+                "actions.base.credentials.failed"), css_classes=["spotify-controller-red"])
         # Create client id, secret and redirect uri entry rows
         self._client_id = Adw.EntryRow(
             title=self._plugin_base.lm.get("actions.base.client_id"))
@@ -61,6 +59,18 @@ class PluginSettings:
 
         self._load_settings()
         self._enable_auth()
+
+        self._plugin_base.backend.update_client_credentials(
+            self._plugin_base.get_settings().get(KEY_CLIENT_ID),
+            self._plugin_base.get_settings().get(KEY_PORT_REDIRECT_URI)
+        )
+
+        if not self._plugin_base.backend.is_authed():
+            self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
+                "actions.base.credentials.failed"), css_classes=["spotify-controller-red"])
+        else:
+            self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
+                "actions.base.credentials.authenticated"), css_classes=["spotify-controller-green"])
 
         pref_group = Adw.PreferencesGroup()
         pref_group.set_title(self._plugin_base.lm.get(
