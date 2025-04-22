@@ -73,7 +73,7 @@ class PluginSettings:
         port = settings.get(KEY_PORT_REDIRECT_URI, "")
 
         self._client_id.set_text(client_id)
-        self._port.set_value(port)
+        self._port.set_value(int(port))
 
     def _update_status(self, message: str, is_error: bool):
         style = "spotify-controller-red" if is_error else "spotify-controller-green"
@@ -90,7 +90,7 @@ class PluginSettings:
         self._update_settings(KEY_CLIENT_ID, val)
         self._enable_auth()
 
-    def _on_change_port(self, entry, _):
+    def _on_change_port(self, entry):
         val = entry.get_value()
         self._update_settings(KEY_PORT_REDIRECT_URI, val)
         self._enable_auth()
