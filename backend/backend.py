@@ -6,6 +6,8 @@ import webbrowser
 from loguru import logger as log
 import flask_auth as flaskApp
 
+CACHE_PATH = os.path.join(os.path.dirname(__file__), ".cache")
+
 class SpotifyControlBackend(BackendBase):
 
     cache_handler = None
@@ -58,27 +60,27 @@ class SpotifyControlBackend(BackendBase):
                 False, "actions.base.credentials.missing_client_info")
             return
         self.client_id = client_id
-        self.port = port
-        self.redirect_uri = "http://127.0.0.1:" + str(port)
+        self.port = int(port)
+        self.redirect_uri = "http://127.0.0.1:" + str(self.port)
         self.setup_client()
 
     def setup_client(self):
         """
         Setup the client
         """
-        self.cache_handler = spotipy.cache_handler.CacheFileHandler(".cache")
+        self.cache_handler = spotipy.cache_handler.CacheFileHandler(CACHE_PATH)
         self.auth_manager = spotipy.oauth2.SpotifyPKCE(scope=self.scope,
                                                 redirect_uri = self.redirect_uri,
                                                 client_id = self.client_id,
                                                 cache_handler=self.cache_handler,
                                                 open_browser=True)
 
-        if os.path.isfile(".cache") and self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
-            self.auth_manager.get_access_token(".cache")
+        if os.path.isfile(CACHE_PATH) and self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
+            self.auth_manager.get_access_token(CACHE_PATH)
         else:
             # Remove not valid token
-            if os.path.isfile(".cache"):
-                os.remove(".cache")
+            if os.path.isfile(CACHE_PATH):
+                os.remove(CACHE_PATH)
             flaskApp.start_server(self.port)
             webbrowser.open_new_tab(self.auth_manager.get_authorize_url())
             # Wait for Token set from Flask Server
@@ -94,7 +96,7 @@ class SpotifyControlBackend(BackendBase):
         """
         Check if the user is authenticated
         """
-        return os.path.isfile(".cache") and \
+        return os.path.isfile(CACHE_PATH) and \
                self.auth_manager.validate_token(self.auth_manager.get_cached_token())
 
     def get_shuffle_mode(self) -> bool:
