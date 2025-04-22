@@ -1,7 +1,7 @@
 from gi.repository import Gtk, Adw
 import gi
 
-from loguru import logger
+from loguru import logger as log
 
 from src.backend.PluginManager import PluginBase
 
