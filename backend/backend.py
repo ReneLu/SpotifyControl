@@ -96,5 +96,18 @@ class SpotifyControlBackend(BackendBase):
         return os.path.isfile(".cache") and \
                self.auth_manager.validate_token(self.auth_manager.get_cached_token())
 
+    def get_shuffle_mode(self) -> bool:
+        """
+        Get the current shuffle mode
+        """
+        curPlayback = self.spotifyObject.current_playback()
+        return curPlayback['shuffle_state']
+
+    def shuffle(self, shuffle: bool) -> None:
+        """
+        Set the shuffle mode
+        """
+        self.spotifyObject.shuffle(shuffle)
+
 backend = SpotifyControlBackend()
 log.info("SpotifyControlBackend initialized")
