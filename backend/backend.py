@@ -116,8 +116,13 @@ class SpotifyControlBackend(BackendBase):
         """
         Check if the user is authenticated
         """
-        return os.path.isfile(CACHE_PATH) and \
-               self.auth_manager.validate_token(self.auth_manager.get_cached_token())
+        if os.path.isfile(CACHE_PATH):
+            log.info("Cache file found")
+            if self.auth_manager:
+                if self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
+                    log.info("Token is valid")
+                    return True
+        return False
 
     def get_shuffle_mode(self) -> bool:
         """
