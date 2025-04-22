@@ -20,6 +20,11 @@ class PluginSettings:
 
     def __init__(self, plugin_base: PluginBase):
         self._plugin_base = plugin_base
+        log.info("Initialize Settings")
+        settings = self._plugin_base.get_settings()
+        client_id = settings.get(KEY_CLIENT_ID, "")
+        port = settings.get(KEY_PORT_REDIRECT_URI, "")
+        self._plugin_base.backend.update_client_credentials(client_id, port)
 
     def get_settings_area(self) -> Adw.PreferencesGroup:
         if not self._plugin_base.backend.is_authed():
