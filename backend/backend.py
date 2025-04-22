@@ -18,13 +18,26 @@ class SpotifyControlBackend(BackendBase):
     client_id = None
     port = None
     redirect_uri = None
-    username = None
 
     scope = "user-read-playback-state user-modify-playback-state user-read-currently-playing"
 
     def __init__(self):
         super().__init__()
         log.info("Initialize SpotifyControlBackend")
+        log.info("Client ID: " + str(self.client_id))
+        log.info("Port: " + str(self.port))
+
+        self.cache_handler = spotipy.cache_handler.CacheFileHandler(CACHE_PATH)
+        if os.path.isfile(CACHE_PATH) and self.client_id and self.port:
+            self.redirect_uri = "http://127.0.0.1:" + str(self.port)
+            log.info("Cache file found")
+            self.auth_manager = spotipy.oauth2.SpotifyPKCE(scope=self.scope,
+                                                    redirect_uri = self.redirect_uri,
+                                                    client_id = self.client_id,
+                                                    cache_handler=self.cache_handler,
+                                                    open_browser=True)
+            if self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
+                self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
 
     def get_spotify_object(self):
         """
