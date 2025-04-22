@@ -23,15 +23,23 @@ class ShuffleAction(ActionBase):
         self.backend = self.plugin_base.backend
 
     def on_ready(self) -> None:
-        if self.backend.get_shuffle_mode():
-            log.info("Shuffle mode is ON")
-            icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-100.png")
+        if self.backend.is_authed():
+            if self.backend.get_shuffle_mode():
+                log.info("Shuffle mode is ON")
+                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-100.png")
+            else:
+                log.info("Shuffle mode is OFF")
+                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-off-100.png")
+            self.set_media(media_path=icon_path, size=0.75)
         else:
-            log.info("Shuffle mode is OFF")
-            icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-off-100.png")
-        self.set_media(media_path=icon_path, size=0.75)
+            log.info("Spotify is not authenticated")
+            self.set_center_label("Not Authenticated")
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
         log.info("Toggle Shuffle mode")
-        self.backend.shuffle(not self.get_shuffle_mode())
+        if self.backend.is_authed():
+            self.backend.shuffle(not self.get_shuffle_mode())
+        else:
+            log.info("Spotify is not authenticated")
+            self.set_center_label("Not Authenticated")
