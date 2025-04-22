@@ -68,20 +68,27 @@ class SpotifyControlBackend(BackendBase):
         return deviceList
 
     def update_client_credentials(self, client_id: str, port: int):
+        update_needed = False
         if None in (client_id, port) or "" in (client_id, port):
-            self.frontend.on_auth_callback(
-                False, "actions.base.credentials.missing_client_info")
-            return
+            return False
+
+        if self.client_id != client_id:
+            log.info("Update client credentials")
+            update_needed = True
+
         self.client_id = client_id
         self.port = int(port)
         self.redirect_uri = "http://127.0.0.1:" + str(self.port)
-        self.setup_client()
+
+        if update_needed:
+            self.setup_client()
+
+        return True
 
     def setup_client(self):
         """
         Setup the client
         """
-        self.cache_handler = spotipy.cache_handler.CacheFileHandler(CACHE_PATH)
         self.auth_manager = spotipy.oauth2.SpotifyPKCE(scope=self.scope,
                                                 redirect_uri = self.redirect_uri,
                                                 client_id = self.client_id,
