@@ -42,4 +42,5 @@ class ShuffleAction(ActionBase):
             self.backend.shuffle(not self.get_shuffle_mode())
         else:
             log.info("Spotify is not authenticated")
+            self.set_top_label("Shuffle Toggle")
             self.set_center_label("Not Authenticated")
