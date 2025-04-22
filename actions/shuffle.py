@@ -13,19 +13,17 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Gtk, Adw
 
-import spotipy
 from loguru import logger as log
 
 class ShuffleAction(ActionBase):
 
-    spotifyObject: spotipy.Spotify
-
+    backend = None
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.backend = self.plugin_base.backend
 
     def on_ready(self) -> None:
-        self.spotifyObject = self.plugin_base.backend.get_spotify_object()
-        if self.get_shuffle_mode():
+        if self.backend.get_shuffle_mode():
             log.info("Shuffle mode is ON")
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-100.png")
         else:
@@ -35,16 +33,5 @@ class ShuffleAction(ActionBase):
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
-        if self.get_shuffle_mode():
-            log.info("Shuffle mode is ON")
-            self.spotifyObject.shuffle(False)
-        else:
-            log.info("Shuffle mode is OFF")
-            self.spotifyObject.shuffle(True)
-
-    def get_shuffle_mode(self) -> bool:
-        """
-        Get the current shuffle mode
-        """
-        curPlayback = self.spotifyObject.current_playback()
-        return curPlayback['shuffle_state']
+        log.info("Toggle Shuffle mode")
+        self.backend.shuffle(not self.get_shuffle_mode())
