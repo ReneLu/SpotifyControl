@@ -1,5 +1,0 @@
-spotipy==2.25.1
-serpent==1.41
-streamcontroller-plugin-tools>=2.0.1
-flask==3.1.0
-werkzeug==3.1.3
