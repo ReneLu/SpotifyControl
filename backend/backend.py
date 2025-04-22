@@ -89,6 +89,7 @@ class SpotifyControlBackend(BackendBase):
             flaskApp.stop_server()
 
         self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
+
     def is_authed(self) -> bool:
         """
         Check if the user is authenticated
