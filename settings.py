@@ -24,7 +24,8 @@ class PluginSettings:
         settings = self._plugin_base.get_settings()
         client_id = settings.get(KEY_CLIENT_ID, "")
         port = settings.get(KEY_PORT_REDIRECT_URI, "")
-        self._plugin_base.backend.update_client_credentials(client_id, port)
+
+        self._plugin_base.backend.reauthenticate(client_id, port)
 
     def get_settings_area(self) -> Adw.PreferencesGroup:
 
@@ -59,11 +60,6 @@ class PluginSettings:
 
         self._load_settings()
         self._enable_auth()
-
-        self._plugin_base.backend.update_client_credentials(
-            self._plugin_base.get_settings().get(KEY_CLIENT_ID),
-            self._plugin_base.get_settings().get(KEY_PORT_REDIRECT_URI)
-        )
 
         if not self._plugin_base.backend.is_authed():
             self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
@@ -125,6 +121,9 @@ class PluginSettings:
         if not self._plugin_base.backend.is_authed():
             self._update_status(self._plugin_base.lm.get(
                 "actions.base.credentials.failed"), True)
+        else:
+            self._update_status(self._plugin_base.lm.get(
+                "actions.base.credentials.authenticated"), False)
 
     def _enable_auth(self):
         settings = self._plugin_base.get_settings()
