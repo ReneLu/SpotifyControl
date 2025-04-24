@@ -39,6 +39,18 @@ class SpotifyControlBackend(BackendBase):
             if self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
                 self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
 
+    def set_client_id(self, client_id: str):
+        """
+        Set the client ID
+        """
+        self.client_id = client_id
+
+    def set_port(self, port: int):
+        """
+        Set the port
+        """
+        self.port = int(port)
+
     def get_spotify_object(self):
         """
         Get the spotify object
@@ -68,20 +80,17 @@ class SpotifyControlBackend(BackendBase):
         return deviceList
 
     def update_client_credentials(self, client_id: str, port: int):
-        update_needed = False
+        """
+        Update the client credentials
+        """
         if None in (client_id, port) or "" in (client_id, port):
             return False
-
-        if self.client_id != client_id:
-            log.info("Update client credentials")
-            update_needed = True
 
         self.client_id = client_id
         self.port = int(port)
         self.redirect_uri = "http://127.0.0.1:" + str(self.port)
 
-        if update_needed:
-            self.setup_client()
+        self.setup_client()
 
         return True
 
@@ -111,6 +120,37 @@ class SpotifyControlBackend(BackendBase):
             flaskApp.stop_server()
 
         self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
+
+    def reauthenticate(self, client_id: str, port: int):
+        """
+        Reauthenticate the user
+        """
+        if None in (client_id, port) or "" in (client_id, port):
+            return False
+
+        self.client_id = client_id
+        self.port = int(port)
+        self.redirect_uri = "http://127.0.0.1:" + str(self.port)
+
+        if not os.path.isfile(CACHE_PATH):
+            log.info("Cache file not found")
+            return False
+
+        self.cache_handler = spotipy.cache_handler.CacheFileHandler(CACHE_PATH)
+        self.auth_manager = spotipy.oauth2.SpotifyPKCE(scope=self.scope,
+                                                redirect_uri = self.redirect_uri,
+                                                client_id = self.client_id,
+                                                cache_handler=self.cache_handler,
+                                                open_browser=True)
+
+        if not self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
+            log.info("Token is not valid")
+            return False
+
+        self.auth_manager.get_access_token(CACHE_PATH)
+        self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
+
+        return True
 
     def is_authed(self) -> bool:
         """
