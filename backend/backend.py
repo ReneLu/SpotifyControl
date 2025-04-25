@@ -168,7 +168,19 @@ class SpotifyControlBackend(BackendBase):
         """
         Get the current shuffle mode
         """
-        curPlayback = self.spotifyObject.current_playback()
+        if not self.get_active_device_id():
+            return None
+
+        try:
+            curPlayback = self.spotifyObject.current_playback()
+            log.info("Current playback: " + str(curPlayback))
+            if curPlayback is None:
+                log.info("No current playback")
+                return None
+        except spotipy.exceptions.SpotifyException as e:
+            log.error("Error getting current playback: " + str(e))
+            return None
+
         return curPlayback['shuffle_state']
 
     def shuffle(self, shuffle: bool) -> None:
