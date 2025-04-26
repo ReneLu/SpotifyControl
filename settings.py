@@ -20,7 +20,7 @@ class PluginSettings:
 
     def __init__(self, plugin_base: PluginBase):
         self._plugin_base = plugin_base
-        log.info("Initialize Settings")
+        log.debug("Initialize Settings")
         settings = self._plugin_base.get_settings()
         client_id = settings.get(KEY_CLIENT_ID, "")
         port = settings.get(KEY_PORT_REDIRECT_URI, "")
@@ -29,7 +29,7 @@ class PluginSettings:
 
     def get_settings_area(self) -> Adw.PreferencesGroup:
 
-        log.info("Creating settings area")
+        log.debug("Creating settings area")
 
         self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
                 "actions.base.credentials.failed"), css_classes=["spotify-controller-red"])
