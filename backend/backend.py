@@ -23,14 +23,14 @@ class SpotifyControlBackend(BackendBase):
 
     def __init__(self):
         super().__init__()
-        log.info("Initialize SpotifyControlBackend")
-        log.info("Client ID: " + str(self.client_id))
-        log.info("Port: " + str(self.port))
+        log.debug("Initialize SpotifyControlBackend")
+        log.debug("Client ID: " + str(self.client_id))
+        log.debug("Port: " + str(self.port))
 
         self.cache_handler = spotipy.cache_handler.CacheFileHandler(CACHE_PATH)
         if os.path.isfile(CACHE_PATH) and self.client_id and self.port:
             self.redirect_uri = "http://127.0.0.1:" + str(self.port)
-            log.info("Cache file found")
+            log.debug("Cache file found")
             self.auth_manager = spotipy.oauth2.SpotifyPKCE(scope=self.scope,
                                                     redirect_uri = self.redirect_uri,
                                                     client_id = self.client_id,
@@ -64,8 +64,8 @@ class SpotifyControlBackend(BackendBase):
         for item in self.get_devices():
             if item['is_active']:
                 deviceID = item['id']
-                log.info("Current active device " + str(item['name'] +
-                          " with ID " + str(self.deviceID)))
+                log.debug("Current active device " + str(item['name'] +
+                          " with ID " + str(deviceID)))
                 return deviceID
         return None
 
@@ -75,7 +75,7 @@ class SpotifyControlBackend(BackendBase):
         """
         deviceList = self.spotifyObject.devices()
         deviceList = deviceList['devices']
-        log.info("Devices: " + str(deviceList))
+        log.debug("Devices: " + str(deviceList))
 
         return deviceList
 
@@ -133,7 +133,7 @@ class SpotifyControlBackend(BackendBase):
         self.redirect_uri = "http://127.0.0.1:" + str(self.port)
 
         if not os.path.isfile(CACHE_PATH):
-            log.info("Cache file not found")
+            log.debug("Cache file not found")
             return False
 
         self.cache_handler = spotipy.cache_handler.CacheFileHandler(CACHE_PATH)
@@ -144,7 +144,7 @@ class SpotifyControlBackend(BackendBase):
                                                 open_browser=True)
 
         if not self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
-            log.info("Token is not valid")
+            log.debug("Token is not valid")
             return False
 
         self.auth_manager.get_access_token(CACHE_PATH)
@@ -157,10 +157,10 @@ class SpotifyControlBackend(BackendBase):
         Check if the user is authenticated
         """
         if os.path.isfile(CACHE_PATH):
-            log.info("Cache file found")
+            log.debug("Cache file found")
             if self.auth_manager:
                 if self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
-                    log.info("Token is valid")
+                    log.debug("Token is valid")
                     return True
         return False
 
@@ -173,9 +173,9 @@ class SpotifyControlBackend(BackendBase):
 
         try:
             curPlayback = self.spotifyObject.current_playback()
-            log.info("Current playback: " + str(curPlayback))
+            log.debug("Current playback: " + str(curPlayback))
             if curPlayback is None:
-                log.info("No current playback")
+                log.debug("No current playback")
                 return None
         except spotipy.exceptions.SpotifyException as e:
             log.error("Error getting current playback: " + str(e))
@@ -190,4 +190,4 @@ class SpotifyControlBackend(BackendBase):
         self.spotifyObject.shuffle(shuffle)
 
 backend = SpotifyControlBackend()
-log.info("SpotifyControlBackend initialized")
+log.debug("SpotifyControlBackend initialized")
