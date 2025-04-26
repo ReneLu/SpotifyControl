@@ -6,6 +6,7 @@ from src.backend.PluginManager.ActionHolder import ActionHolder
 
 # Import actions
 from .actions.shuffle import ShuffleAction
+from .actions.play_pause import PlayPauseAction
 from .settings import PluginSettings
 
 class SpotifyControl(PluginBase):
@@ -25,9 +26,17 @@ class SpotifyControl(PluginBase):
             plugin_base = self,
             action_base = ShuffleAction,
             action_id = "dev_ReneLu_SpotifyControl::ShuffleAction",
-            action_name = "Shuffle Action",
+            action_name = "Shuffle",
         )
         self.add_action_holder(self.shuffle_action_holder)
+
+        self.playpause_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = PlayPauseAction,
+            action_id = "dev_ReneLu_SpotifyControl::PlayPauseAction",
+            action_name = "Play / Pause",
+        )
+        self.add_action_holder(self.playpause_action_holder)
 
         # Register plugin
         self.register(
