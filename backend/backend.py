@@ -189,5 +189,40 @@ class SpotifyControlBackend(BackendBase):
         """
         self.spotifyObject.shuffle(shuffle)
 
+    def get_playback_state(self) -> str:
+        """
+        Get the current playback state
+        """
+        if not self.get_active_device_id():
+            return None
+
+        try:
+            curPlayback = self.spotifyObject.currently_playing()
+            log.debug("Current playback: " + str(curPlayback))
+            if curPlayback is None:
+                log.debug("No current playback")
+                return None
+        except spotipy.exceptions.SpotifyException as e:
+            log.error("Error getting current playback: " + str(e))
+            return None
+
+        return curPlayback['is_playing']
+
+    def pause(self, device_id=None) -> None:
+        """
+        Pause the playback
+        """
+        if device_id is None:
+            device_id = self.get_active_device_id()
+        self.spotifyObject.pause_playback(device_id=device_id)
+
+    def play(self, device_id=None) -> None:
+        """
+        Play the playback
+        """
+        if device_id is None:
+            device_id = self.get_active_device_id()
+        self.spotifyObject.start_playback(device_id=device_id)
+
 backend = SpotifyControlBackend()
 log.debug("SpotifyControlBackend initialized")
