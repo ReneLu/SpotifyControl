@@ -86,7 +86,7 @@ class PlayPauseAction(ActionBase):
             return [self.devices_select, self.label_toggle]
 
         else:
-            self.not_authed_label = Adw.Label(label=self.plugin_base.lm.get("actions.base.not-authed"))
+            self.not_authed_label = Gtk.Label(label=self.plugin_base.lm.get("actions.base.not-authed"))
             return [self.not_authed_label]
 
     ### Custom Methods ###
