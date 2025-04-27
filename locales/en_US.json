@@ -6,9 +6,14 @@
   "actions.base.port_default": "Redirection URI is always 'http://127.0.0.1'",
   "actions.base.validate": "Validate",
   "actions.base.credentials.title": "Spotify Credentials",
-  "actions.info.link.label": "Checkout how to configure this plugin on",
-  "actions.info.link.text": "GitHub",
   "actions.base.credentials.authenticated": "Authenticated successfully",
   "actions.base.credentials.failed": "Failed to authenticate",
-  "actions.base.credentials.missing_client_info": "Missing Client ID or Client Secret"
+  "actions.base.credentials.missing_client_info": "Missing Client ID or Client Secret",
+  "actions.base.not-authed": "Plugin not authenticated. Please authenticate in the general plugin settings.",
+  "actions.info.link.label": "Checkout how to configure this plugin on",
+  "actions.info.link.text": "GitHub",
+  "actions.playpause.device-select.label": "Select Device",
+  "actions.playpause.device-select.subtitle": "Select the device you want to control",
+  "actions.playpause.show-name-switch.label": "Show Device Name",
+  "actions.playpause.show-name-switch.subtitle": "Show controlled device name at the bottom."
 }
