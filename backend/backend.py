@@ -19,7 +19,7 @@ class SpotifyControlBackend(BackendBase):
     port = None
     redirect_uri = None
 
-    scope = "user-read-playback-state user-modify-playback-state user-read-currently-playing"
+    scope = "user-read-playback-state user-modify-playback-state user-read-currently-playing app-remote-control"
 
     def __init__(self):
         super().__init__()
@@ -208,20 +208,22 @@ class SpotifyControlBackend(BackendBase):
 
         return curPlayback['is_playing']
 
-    def pause(self, device_id=None) -> None:
+    def pause(self, device_id) -> None:
         """
         Pause the playback
         """
         if device_id is None:
             device_id = self.get_active_device_id()
+        log.debug("Pause on device: " + str(device_id))
         self.spotifyObject.pause_playback(device_id=device_id)
 
-    def play(self, device_id=None) -> None:
+    def play(self, device_id) -> None:
         """
         Play the playback
         """
         if device_id is None:
             device_id = self.get_active_device_id()
+        log.debug("Play on device: " + str(device_id))
         self.spotifyObject.start_playback(device_id=device_id)
 
 backend = SpotifyControlBackend()
