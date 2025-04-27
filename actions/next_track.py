@@ -15,7 +15,7 @@ from gi.repository import Gtk, Adw
 
 from loguru import logger as log
 
-class PlayPauseAction(ActionBase):
+class NextTrackAction(ActionBase):
 
     backend = None
 
@@ -34,22 +34,18 @@ class PlayPauseAction(ActionBase):
             self.set_center_label("Not")
             self.set_bottom_label("Authed")
         else:
-            #log.debug("Spotify is authenticated")
-            playback_state = self.backend.get_playback_state()
-            log.debug("Playback state: " + str(playback_state))
             settings = self.get_settings()
-
-            if playback_state == True:
-                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-pause-100.png")
-            else:
-                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-play-100.png")
-
-            self.set_top_label("")
             self.set_center_label("")
-            if settings["show_label"] == True:
-                self.set_bottom_label(str(settings["device_name"]))
+            if settings["show_track_label"] == True:
+                self.set_bottom_label("Next Track")
             else:
                 self.set_bottom_label("")
+
+            if settings["show_device_label"] == True:
+                self.set_top_label(str(settings["device_name"]))
+            else:
+                self.set_top_label("")
+            icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-track-forward-100.png")
             self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
@@ -58,12 +54,8 @@ class PlayPauseAction(ActionBase):
         settings = self.get_settings()
         selected_device = settings["device_id"]
         if self.backend.is_authed() and selected_device is not None:
-            if self.backend.get_playback_state() == True:
-                log.debug("Playing a song. Pause it.")
-                self.backend.pause(selected_device)
-            else:
-                log.debug("Song paused. Start playing it.")
-                self.backend.play(selected_device)
+            log.debug("Playing next song.")
+            self.backend.next_track(selected_device)
 
     def get_config_rows(self) -> list:
         if self.backend.is_authed():
@@ -74,16 +66,21 @@ class PlayPauseAction(ActionBase):
             self.devices_select.set_enable_search(True)
             self.devices_select.connect("notify::selected", self._on_device_select)
 
-            self.label_toggle = Adw.SwitchRow(title=self.plugin_base.lm.get("actions.base.show-name-switch.label"),
+            self.label_device_toggle = Adw.SwitchRow(title=self.plugin_base.lm.get("actions.base.show-name-switch.label"),
                                               subtitle=self.plugin_base.lm.get("actions.base.show-name-switch.subtitle"))
 
-            self.label_toggle.connect("notify::active", self.on_toggle_label)
+            self.label_track_toggle = Adw.SwitchRow(title=self.plugin_base.lm.get("actions.next-track.show-name.label"),
+                                              subtitle=self.plugin_base.lm.get("actions.next-track.show-name.subtitle"))
+
+            self.label_device_toggle.connect("notify::active", self.on_toggle_device_label)
+            self.label_track_toggle.connect("notify::active", self.on_toggle_track_label)
             self.set_settings_defaults()
 
-            self.label_toggle.set_active(self.get_settings().get("show_label", False))
+            self.label_device_toggle.set_active(self.get_settings().get("show_device_label", False))
+            self.label_track_toggle.set_active(self.get_settings().get("show_track_label", False))
 
             self.update_device_selector()
-            return [self.devices_select, self.label_toggle]
+            return [self.devices_select, self.label_device_toggle]
 
         else:
             self.not_authed_label = Gtk.Label(label=self.plugin_base.lm.get("actions.base.not-authed"))
@@ -99,8 +96,10 @@ class PlayPauseAction(ActionBase):
             settings["device_name"] = None
         if "device_id" not in settings:
             settings["device_id"] = None
-        if "show_label" not in settings:
-            settings["show_label"] = False
+        if "show_device_label" not in settings:
+            settings["show_device_label"] = False
+        if "show_track_label" not in settings:
+            settings["show_track_label"] = False
         self.set_settings(settings)
 
     def update_device_selector(self):
@@ -143,9 +142,14 @@ class PlayPauseAction(ActionBase):
 
         log.debug("Selected device: " + settings["device_name"] + " -- " + settings["device_id"])
 
-    def on_toggle_label(self, switch, *args):
+    def on_toggle_device_label(self, switch, *args):
         settings = self.get_settings()
-        settings["show_label"] = switch.get_active()
+        settings["show_device_label"] = switch.get_active()
+        self.set_settings(settings)
+
+    def on_toggle_track_label(self, switch, *args):
+        settings = self.get_settings()
+        settings["show_track_label"] = switch.get_active()
         self.set_settings(settings)
 
     def get_device_id_from_name(self, name: str) -> str:
