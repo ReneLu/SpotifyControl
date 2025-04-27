@@ -235,5 +235,14 @@ class SpotifyControlBackend(BackendBase):
         log.debug("Next track on device: " + str(device_id))
         self.spotifyObject.next_track(device_id=device_id)
 
+    def previous_track(self, device_id) -> None:
+        """
+        Play the previous track
+        """
+        if device_id is None:
+            device_id = self.get_active_device_id()
+        log.debug("Previous track on device: " + str(device_id))
+        self.spotifyObject.previous_track(device_id=device_id)
+
 backend = SpotifyControlBackend()
 log.debug("SpotifyControlBackend initialized")
