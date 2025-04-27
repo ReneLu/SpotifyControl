@@ -80,7 +80,7 @@ class NextTrackAction(ActionBase):
             self.label_track_toggle.set_active(self.get_settings().get("show_track_label", False))
 
             self.update_device_selector()
-            return [self.devices_select, self.label_device_toggle, self.label_track_toggle]
+            return [self.devices_select, self.label_device_toggle]
 
         else:
             self.not_authed_label = Gtk.Label(label=self.plugin_base.lm.get("actions.base.not-authed"))
