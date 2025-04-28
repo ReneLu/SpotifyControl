@@ -251,7 +251,7 @@ class SpotifyControlBackend(BackendBase):
         if device_id is None:
             device_id = self.get_active_device_id()
         log.debug("Set volume on device: " + str(device_id) + " to " + str(volume))
-        self.spotifyObject.volume(volume, device_id=device_id)
+        self.spotifyObject.volume(int(volume), device_id=device_id)
 
     def get_volume(self, device_id) -> int:
         """
