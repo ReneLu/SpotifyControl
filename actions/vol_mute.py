@@ -50,7 +50,11 @@ class VolMuteAction(ActionBase):
                 self.set_top_label("")
 
             # Set icon
-            if volume == 0:
+            if volume is None:
+                # Set icon to no sound available
+                log.debug("Volume is not available")
+                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-sound-100.png")
+            elif volume == 0:
                 # Set icon to muted
                 log.debug("Volume is muted")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-mute-100.png")
@@ -73,7 +77,10 @@ class VolMuteAction(ActionBase):
         if self.backend.is_authed() and selected_device is not None:
             # Get current volume
             current_vol = self.backend.get_volume(selected_device)
-            if current_vol == 0:
+            if current_vol is None:
+                log.debug("Volume is not available.")
+                return None
+            elif current_vol == 0:
                 # Set volume to 100
                 new_vol = self.last_volume
                 log.debug("Volume is muted. Set to " + str(new_vol))
@@ -83,7 +90,6 @@ class VolMuteAction(ActionBase):
                 new_vol = 0
                 log.debug("Volume is unmuted. Set to 0")
             else:
-                # Set volume to 0
                 log.debug("Volume is not available.")
                 return None
             self.backend.set_volume(new_vol, selected_device)
