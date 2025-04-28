@@ -50,7 +50,6 @@ class VolDwnAction(ActionBase):
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
-        log.debug("Volume Down by ")
         settings = self.get_settings()
         selected_device = settings["device_id"]
         if self.backend.is_authed() and selected_device is not None:
