@@ -19,5 +19,7 @@
   "actions.next-track.show-name.label": "Show next track ",
   "actions.next-track.show-name.subtitle": "Show the name of the next track",
   "actions.vol-dwn.vol-spin.label": "Decrease Volume by",
-  "actions.vol-dwn.vol-spin.subtitle": "The amount the volume will be decreased"
+  "actions.vol-dwn.vol-spin.subtitle": "The amount the volume will be decreased",
+  "actions.vol-dwn.vol-show.label": "Show Volume",
+  "actions.vol-dwn.vol-show.subtitle": "Show the current volume"
 }
