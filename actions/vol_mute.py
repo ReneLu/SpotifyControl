@@ -116,7 +116,6 @@ class VolMuteAction(ActionBase):
 
             self.label_device_toggle.set_active(self.get_settings().get("show_device_label", False))
             self.label_vol_toggle.set_active(self.get_settings().get("show_vol_label", False))
-            self.vol_chng.set_value(self.get_settings().get("vol_chng", 5))
             self.update_device_selector()
 
             return [self.devices_select, self.label_device_toggle, self.label_vol_toggle]
@@ -139,8 +138,6 @@ class VolMuteAction(ActionBase):
             settings["show_device_label"] = False
         if "show_vol_label" not in settings:
             settings["show_vol_label"] = False
-        if "vol_chng" not in settings:
-            settings["vol_chng"] = 5
         self.set_settings(settings)
 
     def update_device_selector(self):
