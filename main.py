@@ -11,6 +11,7 @@ from .actions.next_track import NextTrackAction
 from .actions.previous_track import PrevTrackAction
 from .actions.vol_down import VolDwnAction
 from .actions.vol_up import VolUpAction
+from .actions.vol_mute import VolMuteAction
 from .settings import PluginSettings
 
 class SpotifyControl(PluginBase):
@@ -73,6 +74,14 @@ class SpotifyControl(PluginBase):
             action_name = "Volume Up",
         )
         self.add_action_holder(self.vol_up_action_holder)
+
+        self.vol_mute_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = VolMuteAction,
+            action_id = "dev_ReneLu_SpotifyControl::VolMuteAction",
+            action_name = "Volume Mute",
+        )
+        self.add_action_holder(self.vol_mute_action_holder)
 
         # Register plugin
         self.register(
