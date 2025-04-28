@@ -244,5 +244,32 @@ class SpotifyControlBackend(BackendBase):
         log.debug("Previous track on device: " + str(device_id))
         self.spotifyObject.previous_track(device_id=device_id)
 
+    def set_volume(self, volume: int, device_id) -> None:
+        """
+        Set the volume
+        """
+        if device_id is None:
+            device_id = self.get_active_device_id()
+        log.debug("Set volume on device: " + str(device_id) + " to " + str(volume))
+        self.spotifyObject.volume(volume, device_id=device_id)
+
+    def get_volume(self, device_id) -> int:
+        """
+        Get the current volume
+        """
+        for item in self.get_devices():
+            if item['id'] == device_id:
+                if item['supports_volume']:
+                    log.debug("Get Volume from device " + str(item['name'] +
+                            " with amount " + str(item['volume_percent']) + "%"))
+                    return item['volume_percent']
+                else:
+                    log.debug("Device " + str(item['name']) +
+                            " does not support volume control")
+                    return None
+        log.debug("Device " + str(device_id) + " not found")
+        return None
+
+
 backend = SpotifyControlBackend()
 log.debug("SpotifyControlBackend initialized")
