@@ -36,6 +36,17 @@ class VolDwnAction(ActionBase):
         else:
             settings = self.get_settings()
             self.set_center_label("")
+
+            selected_device = settings["device_id"]
+            if self.backend.get_volume(selected_device) is None:
+            # Set icon to no sound available
+                log.debug("Volume is not available")
+                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-sound-100.png")
+            else:
+                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-decr-vol-100.png")
+
+            self.set_media(media_path=icon_path, size=0.75)
+
             if settings["show_vol_label"] == True:
                 self.set_bottom_label(str(self.backend.get_volume(settings["device_id"])))
             else:
@@ -45,8 +56,6 @@ class VolDwnAction(ActionBase):
                 self.set_top_label(str(settings["device_name"]))
             else:
                 self.set_top_label("")
-            icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-decr-vol-100.png")
-            self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
@@ -55,6 +64,9 @@ class VolDwnAction(ActionBase):
         if self.backend.is_authed() and selected_device is not None:
             log.debug("Decreasing volume by " + str(settings["vol_chng"]))
             old_vol = self.backend.get_volume(selected_device)
+            if old_vol is None:
+                log.debug("Volume is not available")
+                return
             new_vol = old_vol - settings["vol_chng"]
             if new_vol < 0:
                 new_vol = 0
