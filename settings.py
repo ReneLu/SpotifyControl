@@ -53,10 +53,15 @@ class PluginSettings:
         self._auth_button.connect("clicked", self._on_auth_clicked)
 
         # Create info
-        gh_link_label = self._plugin_base.lm.get("actions.info.link.label")
-        gh_link_text = self._plugin_base.lm.get("actions.info.link.text")
+        gh_link_label = self._plugin_base.lm.get("actions.info.gh-link.label")
+        gh_link_text = self._plugin_base.lm.get("actions.info.gh-link.text")
         gh_label = Gtk.Label(
             use_markup=True, label=f"{gh_link_label} <a href=\"https://github.com/ReneLu/SpotifyControl\">{gh_link_text}</a>")
+
+        icn_link_label = self._plugin_base.lm.get("actions.icon-link.icon.label")
+        icn_link_text = self._plugin_base.lm.get("actions.icon-link.icon.text")
+        icn_label = Gtk.Label(
+            use_markup=True, label=f"{icn_link_label} <a href=\"https://icons8.com\">{icn_link_text}</a>")
 
         self._load_settings()
         self._enable_auth()
@@ -76,6 +81,7 @@ class PluginSettings:
         pref_group.add(self._port)
         pref_group.add(self._auth_button)
         pref_group.add(gh_label)
+        pref_group.add(icn_label)
         return pref_group
 
     def _load_settings(self):
