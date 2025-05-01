@@ -57,10 +57,10 @@ class RepeatAction(ActionBase):
                 self.set_bottom_label("")
             else:
                 log.debug("Repeat mode is None")
-                self.set_top_label("Repeat")
-                self.set_center_label("No Music")
-                self.set_bottom_label("Playing")
-                icon_path = ""
+                self.set_top_label("")
+                self.set_center_label("")
+                self.set_bottom_label("")
+                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-music-100.png")
             self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
