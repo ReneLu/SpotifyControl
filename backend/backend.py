@@ -270,6 +270,38 @@ class SpotifyControlBackend(BackendBase):
         log.debug("Device " + str(device_id) + " not found")
         return None
 
+    def repeat(self, repeat: str, device_id) -> None:
+        """
+        Set the repeat mode
+        """
+        if repeat not in ['off', 'track', 'context']:
+            log.error("Invalid repeat mode: " + str(repeat))
+            return
+
+        if device_id is None:
+            device_id = self.get_active_device_id()
+
+        log.debug("Set repeat on device: " + str(device_id) + " to " + str(repeat))
+        self.spotifyObject.repeat(repeat, device_id)
+
+    def get_current_repeat_state(self) -> str:
+        """
+        Get the current shuffle mode
+        """
+        if not self.get_active_device_id():
+            return None
+
+        try:
+            curPlayback = self.spotifyObject.current_playback()
+            log.debug("Current playback: " + str(curPlayback))
+            if curPlayback is None:
+                log.debug("No current playback")
+                return None
+        except spotipy.exceptions.SpotifyException as e:
+            log.error("Error getting current playback: " + str(e))
+            return None
+
+        return curPlayback['repeat_state'] # context - Repeat playlist, track - Repeat track, off - Repeat off
 
 backend = SpotifyControlBackend()
 log.debug("SpotifyControlBackend initialized")
