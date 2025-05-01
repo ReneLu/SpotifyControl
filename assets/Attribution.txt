@@ -1,2 +1,2 @@
-All images in this folder (and subfolders) are from fonts.google.com and licensed under the Apache License, Version 2.0.
-You can retrieve a copy of the license at https://www.apache.org/licenses/LICENSE-2.0.
+All images in this folder (and subfolders) are from https://icons8.com and licensed under the Universal Multimedia License Agreement for Icons8.
+You can retrieve a copy of the license at https://intercom.help/icons8-7fb7577e8170/en/articles/5534926-universal-multimedia-license-agreement-for-icons8.
