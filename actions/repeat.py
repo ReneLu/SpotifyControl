@@ -71,13 +71,13 @@ class RepeatAction(ActionBase):
             selected_device = settings["device_id"]
             if repeat_state == "off":
                 log.debug("Repeat mode is Off")
-                self.backend.set_repeat_state("context", selected_device)
+                self.backend.repeat("context", selected_device)
             elif repeat_state == "context":
                 log.debug("Repeat mode is Context")
-                self.backend.set_repeat_state("track", selected_device)
+                self.backend.repeat("track", selected_device)
             elif repeat_state == "track":
                 log.debug("Repeat mode is Track")
-                self.backend.set_repeat_state("off", selected_device)
+                self.backend.repeat("off", selected_device)
             else:
                 log.debug("Repeat mode is None")
                 self.set_top_label("Repeat")
