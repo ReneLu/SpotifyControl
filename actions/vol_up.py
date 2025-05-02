@@ -29,10 +29,7 @@ class VolUpAction(ActionBase):
     def on_tick(self) -> None:
         if not self.backend.is_authed():
             #log.debug("Spotify is not authenticated")
-            self.set_media(media_path="")
-            self.set_top_label("Spotify")
-            self.set_center_label("Not")
-            self.set_bottom_label("Authed")
+            icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
             settings = self.get_settings()
             self.set_center_label("")
@@ -45,8 +42,6 @@ class VolUpAction(ActionBase):
             else:
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-incr-vol-100.png")
 
-            self.set_media(media_path=icon_path, size=0.75)
-
             if settings["show_vol_label"] == True:
                 self.set_bottom_label(str(self.backend.get_volume(settings["device_id"])))
             else:
@@ -56,6 +51,8 @@ class VolUpAction(ActionBase):
                 self.set_top_label(str(settings["device_name"]))
             else:
                 self.set_top_label("")
+
+        self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode

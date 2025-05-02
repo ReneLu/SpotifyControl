@@ -27,12 +27,8 @@ class RepeatAction(ActionBase):
 
     def on_tick(self) -> None:
         if not self.backend.is_authed():
-            self.set_media(media_path="")
-            self.set_top_label("Spotify")
-            self.set_center_label("Not")
-            self.set_bottom_label("Authed")
+            icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
-
             settings = self.get_settings()
             if settings["show_device_label"] == True:
                 self.set_top_label(str(settings["device_name"]))
@@ -61,7 +57,7 @@ class RepeatAction(ActionBase):
                 self.set_center_label("")
                 self.set_bottom_label("")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-music-100.png")
-            self.set_media(media_path=icon_path, size=0.75)
+        self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
         log.debug("Toggle Repeat mode")
