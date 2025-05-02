@@ -56,7 +56,7 @@ class RepeatAction(ActionBase):
                 self.set_top_label("")
                 self.set_center_label("")
                 self.set_bottom_label("")
-                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-music-100.png")
+                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-repeat-no-music-100.png")
         self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
