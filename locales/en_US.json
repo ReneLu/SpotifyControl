@@ -14,7 +14,7 @@
   "actions.base.show-name-switch.subtitle": "Show controlled device name.",
   "actions.info.gh-link.label": "Checkout how to configure this plugin on",
   "actions.info.gh-link.text": "GitHub",
-  "actions.info.icon-link.label": "Default Icons by",
+  "actions.info.icon-link.label": "Icons by",
   "actions.info.icon-link.text": "Icons8",
   "actions.base.device-select.label": "Select Device",
   "actions.base.device-select.subtitle": "Select the device you want to control",
