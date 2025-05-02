@@ -58,8 +58,8 @@ class PluginSettings:
         gh_label = Gtk.Label(
             use_markup=True, label=f"{gh_link_label} <a href=\"https://github.com/ReneLu/SpotifyControl\">{gh_link_text}</a>")
 
-        icn_link_label = self._plugin_base.lm.get("actions.icon-link.icon.label")
-        icn_link_text = self._plugin_base.lm.get("actions.icon-link.icon.text")
+        icn_link_label = self._plugin_base.lm.get("actions.info.icon-link.label")
+        icn_link_text = self._plugin_base.lm.get("actions.info.icon-link.text")
         icn_label = Gtk.Label(
             use_markup=True, label=f"{icn_link_label} <a href=\"https://icons8.com\">{icn_link_text}</a>")
 
