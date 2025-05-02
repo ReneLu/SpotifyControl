@@ -29,10 +29,7 @@ class NextTrackAction(ActionBase):
     def on_tick(self) -> None:
         if not self.backend.is_authed():
             #log.debug("Spotify is not authenticated")
-            self.set_media(media_path="")
-            self.set_top_label("Spotify")
-            self.set_center_label("Not")
-            self.set_bottom_label("Authed")
+            icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
             settings = self.get_settings()
             self.set_center_label("")
@@ -46,7 +43,7 @@ class NextTrackAction(ActionBase):
             else:
                 self.set_top_label("")
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-track-forward-100.png")
-            self.set_media(media_path=icon_path, size=0.75)
+        self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
