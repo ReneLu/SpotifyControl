@@ -29,10 +29,7 @@ class VolMuteAction(ActionBase):
 
     def on_tick(self) -> None:
         if not self.backend.is_authed():
-            self.set_media(media_path="")
-            self.set_top_label("Spotify")
-            self.set_center_label("Not")
-            self.set_bottom_label("Authed")
+            icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
             settings = self.get_settings()
             volume = self.backend.get_volume(settings["device_id"])
@@ -68,7 +65,7 @@ class VolMuteAction(ActionBase):
                 log.debug("Volume is not available")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-sound-100.png")
 
-            self.set_media(media_path=icon_path, size=0.75)
+        self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
