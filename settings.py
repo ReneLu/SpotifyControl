@@ -87,7 +87,7 @@ class PluginSettings:
     def _load_settings(self):
         settings = self._plugin_base.get_settings()
         client_id = settings.get(KEY_CLIENT_ID, "")
-        port = settings.get(KEY_PORT_REDIRECT_URI, "")
+        port = settings.get(KEY_PORT_REDIRECT_URI, 8080)
 
         self._client_id.set_text(client_id)
         self._port.set_value(int(port))
