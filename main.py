@@ -23,14 +23,14 @@ class SpotifyControl(PluginBase):
         self.lm = self.locale_manager
         self.lm.set_to_os_default()
 
-        # Get general settings
-        self._settings_manager = PluginSettings(self)
-        self.has_plugin_settings = True
-
         ## Launch backend
         backend_path = os.path.join(self.PATH, "backend", "backend.py")
         self.launch_backend(backend_path=backend_path, open_in_terminal=False,
                             venv_path=os.path.join(self.PATH, "backend", '.venv'))
+
+        # Get general settings
+        self._settings_manager = PluginSettings(self)
+        self.has_plugin_settings = True
 
         ## Register actions
         self.shuffle_action_holder = ActionHolder(
