@@ -8,7 +8,7 @@
   "actions.base.credentials.title": "Spotify Credentials",
   "actions.base.credentials.authenticated": "Authenticated successfully",
   "actions.base.credentials.failed": "Failed to authenticate",
-  "actions.base.credentials.missing_client_info": "Missing Client ID or Client Secret",
+  "actions.base.credentials.missing_client_info": "Missing Client ID",
   "actions.base.not-authed": "Plugin not authenticated. Please authenticate in the general plugin settings.",
   "actions.base.show-name-switch.label": "Show Device Name",
   "actions.base.show-name-switch.subtitle": "Show controlled device name.",
@@ -27,5 +27,7 @@
   "actions.vol-up.vol-spin.label": "Increase Volume by",
   "actions.vol-up.vol-spin.subtitle": "The amount the volume will be increased",
   "actions.vol-set.vol-spin.label": "Set Volume to",
-  "actions.vol-set.vol-spin.subtitle": "The new Value the volume will be set to"
+  "actions.vol-set.vol-spin.subtitle": "The new Value the volume will be set to",
+  "actions.vol-set.vol-show.label": "Show Volume Value",
+  "actions.vol-set.vol-show.subtitle": "Show the Volume Value the volume will be set to"
 }
