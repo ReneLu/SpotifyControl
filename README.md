@@ -61,7 +61,7 @@ If your Issue isn't in the Issue Board you can create a new Issue from the Templ
 You can join the stream controller [Discord Server](https://discord.gg/MSyHM8TN3u). There you can get help from other or from me by contacting K!ll3rT. But I dont look into discord evry day.
 
 
-
+## Attributions
 This plugin uses the Python Module [spotipy](https://spotipy.readthedocs.io/en/2.25.1/#license)
 
 All Icons created by [icons8](https://icons8.com)
