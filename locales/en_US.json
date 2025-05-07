@@ -25,5 +25,7 @@
   "actions.vol-dwn.vol-show.label": "Show Volume",
   "actions.vol-dwn.vol-show.subtitle": "Show the current volume",
   "actions.vol-up.vol-spin.label": "Increase Volume by",
-  "actions.vol-up.vol-spin.subtitle": "The amount the volume will be increased"
+  "actions.vol-up.vol-spin.subtitle": "The amount the volume will be increased",
+  "actions.vol-set.vol-spin.label": "Set Volume to",
+  "actions.vol-set.vol-spin.subtitle": "The new Value the volume will be set to"
 }
