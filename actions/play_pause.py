@@ -22,15 +22,18 @@ class PlayPauseAction(ActionBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.backend = self.plugin_base.backend
+        self.has_configuration = True
 
     def on_ready(self) -> None:
         self.set_settings_defaults()
+        self.on_tick()
 
     def on_tick(self) -> None:
         if not self.backend.is_authed():
             #log.debug("Spotify is not authenticated")
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
+            self.backend.set_action_active(True)
             #log.debug("Spotify is authenticated")
             playback_state = self.backend.get_playback_state()
             log.debug("Playback state: " + str(playback_state))
@@ -44,7 +47,11 @@ class PlayPauseAction(ActionBase):
             self.set_top_label("")
             self.set_center_label("")
             if settings["show_label"] == True:
-                self.set_bottom_label(str(settings["device_name"]))
+                if settings["device_name"] == None:
+                    name = self.backend.get_active_device_name()
+                else:
+                    name = settings["device_name"]
+                self.set_bottom_label(str(name))
             else:
                 self.set_bottom_label("")
         self.set_media(media_path=icon_path, size=0.75)
@@ -54,7 +61,7 @@ class PlayPauseAction(ActionBase):
         log.debug("Toggle Play / Pause mode")
         settings = self.get_settings()
         selected_device = settings["device_id"]
-        if self.backend.is_authed() and selected_device is not None:
+        if self.backend.is_authed():
             if self.backend.get_playback_state() == True:
                 log.debug("Playing a song. Pause it.")
                 self.backend.pause(selected_device)
