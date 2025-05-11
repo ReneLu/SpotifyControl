@@ -5,6 +5,7 @@ import spotipy
 import webbrowser
 from loguru import logger as log
 import flask_auth as flaskApp
+import threading, time
 
 CACHE_PATH = os.path.join(os.path.dirname(__file__), ".cache")
 
@@ -13,6 +14,13 @@ class SpotifyControlBackend(BackendBase):
     cache_handler = None
     auth_manager = None
     spotifyObject = None
+
+    current_playback_response = None
+    deviceList = None
+    action_active = False
+    ticked_api_call_thread = None
+    ticked_api_call_thread_started = False
+    last_active_api_call = 0.0
 
     # User Credetials
     client_id = None
@@ -39,6 +47,12 @@ class SpotifyControlBackend(BackendBase):
             if self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
                 self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
 
+        self.ticked_api_call_thread = threading.Thread(target=self.ticked_api_call)
+        self.ticked_api_call_thread.daemon = True
+        self.ticked_api_call_thread.start()
+        log.debug("Ticked API call thread started")
+
+    ### Setters and Getters ###
     def set_client_id(self, client_id: str):
         """
         Set the client ID
@@ -57,28 +71,7 @@ class SpotifyControlBackend(BackendBase):
         """
         return self.spotifyObject
 
-    def get_active_device_id(self):
-        """
-        Get the active device ID
-        """
-        for item in self.get_devices():
-            if item['is_active']:
-                deviceID = item['id']
-                log.debug("Current active device " + str(item['name'] +
-                          " with ID " + str(deviceID)))
-                return deviceID
-        return None
-
-    def get_devices(self):
-        """
-        Get all devices
-        """
-        deviceList = self.spotifyObject.devices()
-        deviceList = deviceList['devices']
-        log.debug("Devices: " + str(deviceList))
-
-        return deviceList
-
+    ### Credential Handling ###
     def update_client_credentials(self, client_id: str, port: int):
         """
         Update the client credentials
@@ -152,6 +145,70 @@ class SpotifyControlBackend(BackendBase):
 
         return True
 
+    ### WebAPI Access functions ###
+    def ticked_api_call(self):
+        """
+        Call the Spotify API every 1 second
+        """
+        self.ticked_api_call_thread_started = True
+        while True:
+
+            log.debug("Ticked API call")
+            # self.action_active = False  # Must be set to True from an action to keep thread alive
+            while time.time() - self.last_active_api_call > 5:
+                # Wait for action on ticked API call
+                self.current_playback_response = None
+
+            if self.is_authed():
+                try:
+                    self.current_playback_response = self.spotifyObject.current_playback()
+                    log.debug("Current playback: " + str(self.current_playback_response))
+                except spotipy.exceptions.SpotifyException as e:
+                    log.error("Error getting current playback: " + str(e))
+                try:
+                    self.deviceList= self.spotifyObject.devices()
+                    log.debug("Devices: " + str(self.deviceList))
+                except spotipy.exceptions.SpotifyException as e:
+                    log.error("Error getting devices: " + str(e))
+            time.sleep(1)
+
+    def set_action_active(self, active: bool):
+        """
+        Set the action active
+        """
+        log.debug("Set action active: " + str(active))
+        self.action_active = active
+        self.last_active_api_call = time.time()
+
+    ### Player Control ###
+    def get_active_device_id(self):
+        """
+        Get the active device ID
+        """
+        if self.deviceList is None:
+            log.debug("No devices found")
+            return None
+
+        for device in self.deviceList['devices']:
+            if device['is_active']:
+                log.debug("Active Device id: " + str(device['id']))
+                return device['id']
+        return None
+
+    def get_active_device_name(self):
+        """
+        Get the active device ID
+        """
+        if self.deviceList is None:
+            log.debug("No devices found")
+            return None
+
+        for device in self.deviceList['devices']:
+            if device['is_active']:
+                log.debug("Active Device name: " + str(device['name']))
+                return device['name']
+        return None
+
     def is_authed(self) -> bool:
         """
         Check if the user is authenticated
@@ -171,23 +228,22 @@ class SpotifyControlBackend(BackendBase):
         if not self.get_active_device_id():
             return None
 
-        try:
-            curPlayback = self.spotifyObject.current_playback()
-            log.debug("Current playback: " + str(curPlayback))
-            if curPlayback is None:
-                log.debug("No current playback")
-                return None
-        except spotipy.exceptions.SpotifyException as e:
-            log.error("Error getting current playback: " + str(e))
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            log.debug("No current playback")
             return None
-
         return curPlayback['shuffle_state']
 
-    def shuffle(self, shuffle: bool) -> None:
+    def shuffle(self, shuffle: bool, device_id=None) -> None:
         """
         Set the shuffle mode
         """
-        self.spotifyObject.shuffle(shuffle)
+        if device_id is None:
+            device_id = self.get_active_device_id()
+
+        if device_id is None:   # No active Device found
+            return
+        self.spotifyObject.shuffle(shuffle, device_id=device_id)
 
     def get_playback_state(self) -> str:
         """
@@ -196,14 +252,9 @@ class SpotifyControlBackend(BackendBase):
         if not self.get_active_device_id():
             return None
 
-        try:
-            curPlayback = self.spotifyObject.currently_playing()
-            log.debug("Current playback: " + str(curPlayback))
-            if curPlayback is None:
-                log.debug("No current playback")
-                return None
-        except spotipy.exceptions.SpotifyException as e:
-            log.error("Error getting current playback: " + str(e))
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            log.debug("No current playback")
             return None
 
         return curPlayback['is_playing']
@@ -214,6 +265,9 @@ class SpotifyControlBackend(BackendBase):
         """
         if device_id is None:
             device_id = self.get_active_device_id()
+
+        if device_id is None:   # No active Device found
+            return
         log.debug("Pause on device: " + str(device_id))
         self.spotifyObject.pause_playback(device_id=device_id)
 
@@ -223,6 +277,9 @@ class SpotifyControlBackend(BackendBase):
         """
         if device_id is None:
             device_id = self.get_active_device_id()
+
+        if device_id is None:   # No active Device found
+            return
         log.debug("Play on device: " + str(device_id))
         self.spotifyObject.start_playback(device_id=device_id)
 
@@ -232,6 +289,9 @@ class SpotifyControlBackend(BackendBase):
         """
         if device_id is None:
             device_id = self.get_active_device_id()
+
+        if device_id is None:   # No active Device found
+            return
         log.debug("Next track on device: " + str(device_id))
         self.spotifyObject.next_track(device_id=device_id)
 
@@ -241,6 +301,9 @@ class SpotifyControlBackend(BackendBase):
         """
         if device_id is None:
             device_id = self.get_active_device_id()
+
+        if device_id is None:   # No active Device found
+            return
         log.debug("Previous track on device: " + str(device_id))
         self.spotifyObject.previous_track(device_id=device_id)
 
@@ -257,18 +320,16 @@ class SpotifyControlBackend(BackendBase):
         """
         Get the current volume
         """
-        for item in self.get_devices():
-            if item['id'] == device_id:
-                if item['supports_volume']:
-                    log.debug("Get Volume from device " + str(item['name'] +
-                            " with amount " + str(item['volume_percent']) + "%"))
-                    return item['volume_percent']
-                else:
-                    log.debug("Device " + str(item['name']) +
-                            " does not support volume control")
-                    return None
-        log.debug("Device " + str(device_id) + " not found")
-        return None
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            log.debug("No current playback")
+            return None
+        if curPlayback['device']['supports_volume']:
+            return curPlayback['device']['volume_percent']
+        else:
+            log.debug("Device " + str(curPlayback['name']) +
+                    " does not support volume control")
+            return None
 
     def repeat(self, repeat: str, device_id) -> None:
         """
@@ -281,6 +342,9 @@ class SpotifyControlBackend(BackendBase):
         if device_id is None:
             device_id = self.get_active_device_id()
 
+        if device_id is None:   # No active Device found
+            return
+
         log.debug("Set repeat on device: " + str(device_id) + " to " + str(repeat))
         self.spotifyObject.repeat(repeat, device_id)
 
@@ -291,14 +355,9 @@ class SpotifyControlBackend(BackendBase):
         if not self.get_active_device_id():
             return None
 
-        try:
-            curPlayback = self.spotifyObject.current_playback()
-            log.debug("Current playback: " + str(curPlayback))
-            if curPlayback is None:
-                log.debug("No current playback")
-                return None
-        except spotipy.exceptions.SpotifyException as e:
-            log.error("Error getting current playback: " + str(e))
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            log.debug("No current playback")
             return None
 
         return curPlayback['repeat_state'] # context - Repeat playlist, track - Repeat track, off - Repeat off
