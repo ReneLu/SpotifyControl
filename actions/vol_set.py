@@ -136,6 +136,7 @@ class VolSetAction(ActionBase):
         log.debug("Updating device selector")
         self.devices_model = Gtk.StringList()
         self.avail_devices = self.backend.get_devices()
+        self.devices_model.append("Currently Active")
         for device in self.avail_devices:
             self.devices_model.append(device["name"])
         self.devices_select.set_model(self.devices_model)
@@ -145,16 +146,12 @@ class VolSetAction(ActionBase):
         # If the device is not in the list, set it to 0 and set settings to the first device
         log.debug("Selected device in Settings: " + str(settings["device_name"]))
         if settings["device_name"] is not None:
-            self.devices_select.set_selected(self.get_index_of_id(self.devices_model, settings["device_name"]))
+            self.devices_select.set_selected(self.get_index_of_id(self.devices_model, settings["device_name"]) + 1)
         else:
             log.debug("Selected device not in list. Set to 0")
             self.devices_select.set_selected(0)
-            if len(self.avail_devices) > 0:
-                settings["device_name"] = self.avail_devices[0]["name"]
-                settings["device_id"] = self.avail_devices[0]["id"]
-            else:
-                settings["device_name"] = None
-                settings["device_id"] = None
+            settings["device_name"] = None
+            settings["device_id"] = None
 
         self.set_settings(settings)
 
