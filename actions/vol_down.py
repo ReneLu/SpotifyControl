@@ -1,4 +1,5 @@
 # Import StreamController modules
+from GtkHelper.GtkHelper import ComboRow
 from src.backend.PluginManager.ActionBase import ActionBase
 from src.backend.DeckManagement.DeckController import DeckController
 from src.backend.PageManagement.Page import Page
@@ -77,12 +78,14 @@ class VolDwnAction(ActionBase):
 
     def get_config_rows(self) -> list:
         if self.backend.is_authed():
-            self.devices_model = Gtk.StringList()
-            self.devices_select = Adw.ComboRow(model=self.devices_model,
-                                                title=self.plugin_base.lm.get("actions.base.device-select.label"),
-                                                subtitle=self.plugin_base.lm.get("actions.base.device-select.subtitle"))
-            self.devices_select.set_enable_search(True)
-            self.devices_select.connect("notify::selected", self._on_device_select)
+            # Create Device Selector Element
+            self.devices_model = Gtk.ListStore.new([str, str])
+            self.devices_select = ComboRow(model=self.devices_model,
+                                           title=self.plugin_base.lm.get("actions.base.device-select.label"))
+
+            self.device_selector_renderer = Gtk.CellRendererText()
+            self.devices_select.combo_box.pack_start(self.device_selector_renderer, True)
+            self.devices_select.combo_box.add_attribute(self.device_selector_renderer, "text", 0)
 
             self.label_device_toggle = Adw.SwitchRow(title=self.plugin_base.lm.get("actions.base.show-name-switch.label"),
                                               subtitle=self.plugin_base.lm.get("actions.base.show-name-switch.subtitle"))
@@ -94,6 +97,7 @@ class VolDwnAction(ActionBase):
             self.vol_chng.set_title(self.plugin_base.lm.get("actions.vol-dwn.vol-spin.label"))
             self.vol_chng.set_subtitle(self.plugin_base.lm.get("actions.vol-dwn.vol-spin.subtitle"))
 
+            self.devices_select.combo_box.connect("changed", self.on_device_select)
             self.label_device_toggle.connect("notify::active", self.on_toggle_device_label)
             self.label_vol_toggle.connect("notify::active", self.on_toggle_track_label)
             self.vol_chng.connect("notify::value", self.on_toggle_volume_change)
@@ -134,37 +138,39 @@ class VolDwnAction(ActionBase):
         Update the device selector with the available devices
         """
         log.debug("Updating device selector")
-        self.devices_model = Gtk.StringList()
+
+        # Clear the model and add the currently active device
+        self.devices_model.append(["Currently Active", None])
         self.avail_devices = self.backend.get_devices()
-        self.devices_model.append("Currently Active")
         for device in self.avail_devices:
-            self.devices_model.append(device["name"])
-        self.devices_select.set_model(self.devices_model)
+            log.debug("Add Device: " + str(device))
+            self.devices_model.append([device["name"], device["id"]])
+
         settings = self.get_settings()
 
         # Set index of combo box to last selected device
         # If the device is not in the list, set it to 0 and set settings to the first device
         log.debug("Selected device in Settings: " + str(settings["device_name"]))
         if settings["device_name"] is not None:
-            self.devices_select.set_selected(self.get_index_of_id(self.devices_model, settings["device_name"]) + 1)
+            self.devices_select.combo_box.set_active(self.get_index_of_id(settings["device_name"]))
         else:
             log.debug("Selected device not in list. Set to 0")
-            self.devices_select.set_selected(0)
+            self.devices_select.combo_box.set_active(0)
             settings["device_name"] = None
             settings["device_id"] = None
 
         self.set_settings(settings)
 
-    def _on_device_select(self, combo, *args):
+    def on_device_select(self, combo_box, *args):
         """
         Called when the user selects a device from the combo box
         """
         settings = self.get_settings()
-        settings["device_name"] = combo.get_selected_item().get_string()
-        settings["device_id"] = self.get_device_id_from_name(combo.get_selected_item().get_string())
+        settings["device_name"] = self.devices_model[combo_box.get_active()][0]
+        settings["device_id"] = self.devices_model[combo_box.get_active()][1]
         self.set_settings(settings)
 
-        log.debug("Selected device: " + settings["device_name"] + " -- " + settings["device_id"])
+        log.debug("Device selected: " + self.devices_model[combo_box.get_active()][0])
 
     def on_toggle_device_label(self, switch, *args):
         settings = self.get_settings()
