@@ -86,7 +86,7 @@ class PlayPauseAction(ActionBase):
             self.label_toggle.connect("notify::active", self.on_toggle_label)
             self.set_settings_defaults()
 
-            self.label_toggle.set_active(self.get_settings().get("show_label", False))
+            self.label_toggle.set_active(self.get_settings().get("show_device_label", False))
 
             self.update_device_selector()
             return [self.devices_select, self.label_toggle]
@@ -105,8 +105,8 @@ class PlayPauseAction(ActionBase):
             settings["device_name"] = None
         if "device_id" not in settings:
             settings["device_id"] = None
-        if "show_label" not in settings:
-            settings["show_label"] = False
+        if "show_device_label" not in settings:
+            settings["show_device_label"] = False
         self.set_settings(settings)
 
     def update_device_selector(self):
@@ -150,7 +150,7 @@ class PlayPauseAction(ActionBase):
 
     def on_toggle_label(self, switch, *args):
         settings = self.get_settings()
-        settings["show_label"] = switch.get_active()
+        settings["show_device_label"] = switch.get_active()
         self.set_settings(settings)
 
     def get_device_id_from_name(self, name: str) -> str:
