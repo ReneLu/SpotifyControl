@@ -47,10 +47,7 @@ class VolUpAction(ActionBase):
 
             if settings["show_vol_label"] == True:
                 self.set_bottom_label(str(self.backend.get_volume(settings["device_id"])))
-            else:
-                self.set_bottom_label("")
-
-            if settings["show_device_label"] == True:
+            elif settings["show_device_label"] == True:
                 if settings["device_id"] == None:
                     name = self.backend.get_active_device_name()
                 else:
