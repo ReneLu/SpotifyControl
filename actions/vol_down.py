@@ -197,14 +197,16 @@ class VolDwnAction(ActionBase):
                 return device["id"]
         return None
 
-    def get_index_of_id(self, model, name: str) -> int:
+    def get_index_of_id(self, name: str) -> int:
         """
         Get the index of the device id within the combo box
         """
         position = 0
-        for i in range(model.get_n_items()):
-            if model.get_item(i).get_string() == name:
-                position = i
+        for elem in self.devices_model:
+            log.debug("Checking device " + elem[0] + " with id " + str(elem[1]))
+            if elem[0] == name:
+                log.debug("Found device " + name + " with id " + str(elem[1]))
                 break
+            position += 1
         log.debug("Position of device " + name + " is " + str(position))
         return position
