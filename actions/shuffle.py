@@ -22,11 +22,15 @@ class ShuffleAction(ActionBase):
         super().__init__(*args, **kwargs)
         self.backend = self.plugin_base.backend
 
+    def on_ready(self) -> None:
+        self.on_tick()
+
     def on_tick(self) -> None:
         if not self.backend.is_authed():
             #log.debug("Spotify is not authenticated")
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
+            self.backend.set_action_active(True)
             #log.debug("Spotify is authenticated")
             if self.backend.get_shuffle_mode() == True:
                 #log.debug("Shuffle mode is ON")

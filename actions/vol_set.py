@@ -23,21 +23,28 @@ class VolSetAction(ActionBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.backend = self.plugin_base.backend
+        self.has_configuration = True
 
     def on_ready(self) -> None:
         self.set_settings_defaults()
+        self.on_tick()
 
     def on_tick(self) -> None:
         if not self.backend.is_authed():
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
+            self.backend.set_action_active(True)
             settings = self.get_settings()
             device_id = settings["device_id"]
             volume = self.backend.get_volume(device_id)
 
             # Set Labels
             if settings["show_device_label"] == True:
-                self.set_top_label(str(settings["device_name"]))
+                if settings["device_name"] == None:
+                    name = self.backend.get_active_device_name()
+                else:
+                    name = settings["device_name"]
+                self.set_bottom_label(str(name))
             else:
                 self.set_top_label("")
 
@@ -64,7 +71,7 @@ class VolSetAction(ActionBase):
         # Toggle shuffle mode
         settings = self.get_settings()
         selected_device = settings["device_id"]
-        if self.backend.is_authed() and selected_device is not None:
+        if self.backend.is_authed():
             log.debug("Set Volume to " + str(settings["volume"]))
             self.backend.set_volume(settings["volume"], selected_device)
 
