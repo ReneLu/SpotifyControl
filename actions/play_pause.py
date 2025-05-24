@@ -128,7 +128,7 @@ class PlayPauseAction(ActionBase):
         # If the device is not in the list, set it to 0 and set settings to the first device
         log.debug("Selected device in Settings: " + str(settings["device_name"]))
         if settings["device_name"] is not None:
-            self.devices_select.combo_box.set_active(self.get_index_of_id(settings["device_name"]))
+            self.devices_select.combo_box.set_active(self.get_index_of_id(settings["device_id"]))
         else:
             log.debug("Selected device not in list. Set to 0")
             self.devices_select.combo_box.set_active(0)
@@ -162,16 +162,16 @@ class PlayPauseAction(ActionBase):
                 return device["id"]
         return None
 
-    def get_index_of_id(self, name: str) -> int:
+    def get_index_of_id(self, device_id: str) -> int:
         """
         Get the index of the device id within the combo box
         """
         position = 0
         for elem in self.devices_model:
-            log.debug("Checking device " + elem[0] + " with id " + str(elem[1]))
-            if elem[0] == name:
-                log.debug("Found device " + name + " with id " + str(elem[1]))
+            log.debug("Checking device " + elem[0] + " with id " + device_id)
+            if elem[1] == device_id:
+                log.debug("Found device " + elem[0] + " with id " + device_id)
                 break
             position += 1
-        log.debug("Position of device " + name + " is " + str(position))
+        log.debug("Position of device " + elem[0] + " is " + str(position))
         return position
