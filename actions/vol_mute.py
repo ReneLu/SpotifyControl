@@ -40,8 +40,11 @@ class VolMuteAction(ActionBase):
 
             # Set Labels
             if settings["show_vol_label"] == True:
-                self.set_bottom_label(str(volume))
-            elif settings["show_device_label"] == True:
+                self.set_center_label(str(volume))
+            else:
+                self.set_center_label("")
+
+            if settings["show_device_label"] == True:
                 if settings["device_id"] == None:
                     name = self.backend.get_active_device_name()
                 else:
