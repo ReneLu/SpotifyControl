@@ -40,19 +40,17 @@ class VolSetAction(ActionBase):
             volume = self.backend.get_volume(device_id)
 
             # Set Labels
+            if settings["show_set_vol_label"] == True:
+                self.set_center_label(str(int(settings["volume"])))
+            else:
+                self.set_center_label("")
+
             if settings["show_device_label"] == True:
                 if settings["device_id"] == None:
                     name = self.backend.get_active_device_name()
                 else:
                     name = settings["device_name"]
                 self.set_bottom_label(str(name))
-            elif settings["show_set_vol_label"] == True:
-                self.set_center_label(str(int(settings["volume"])))
-            else:
-                self.set_center_label("")
-
-            if settings["show_vol_label"] == True:
-                self.set_bottom_label(str(volume))
             else:
                 self.set_bottom_label("")
 
@@ -63,7 +61,7 @@ class VolSetAction(ActionBase):
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-sound-100.png")
             else:
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-sound-100.png")
-            self.set_media(media_path=icon_path, size=0.75)
+        self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
@@ -87,15 +85,11 @@ class VolSetAction(ActionBase):
             self.label_device_toggle = Adw.SwitchRow(title=self.plugin_base.lm.get("actions.base.show-name-switch.label"),
                                               subtitle=self.plugin_base.lm.get("actions.base.show-name-switch.subtitle"))
 
-            self.label_vol_toggle = Adw.SwitchRow(title=self.plugin_base.lm.get("actions.vol-dwn.vol-show.label"),
-                                              subtitle=self.plugin_base.lm.get("actions.vol-dwn.vol-show.subtitle"))
-
             self.label_vol_set_toggle = Adw.SwitchRow(title=self.plugin_base.lm.get("actions.vol-set.vol-show.label"),
                                               subtitle=self.plugin_base.lm.get("actions.vol-set.vol-show.subtitle"))
 
             self.devices_select.combo_box.connect("changed", self.on_device_select)
             self.label_device_toggle.connect("notify::active", self.on_toggle_device_label)
-            self.label_vol_toggle.connect("notify::active", self.on_toggle_track_label)
             self.label_vol_set_toggle.connect("notify::active", self.on_toggle_vol_set_label)
 
             self.vol_val = Adw.SpinRow.new_with_range(0, 100, 1)
@@ -106,12 +100,11 @@ class VolSetAction(ActionBase):
             self.set_settings_defaults()
 
             self.label_device_toggle.set_active(self.get_settings().get("show_device_label", False))
-            self.label_vol_toggle.set_active(self.get_settings().get("show_vol_label", False))
-            self.label_vol_set_toggle.set_active(self.get_settings().get("show_vol_label", False))
+            self.label_vol_set_toggle.set_active(self.get_settings().get("show_set_vol_label", False))
             self.vol_val.set_value(self.get_settings().get("volume", 50))
             self.update_device_selector()
 
-            return [self.devices_select, self.vol_val, self.label_device_toggle, self.label_vol_set_toggle, self.label_vol_toggle]
+            return [self.devices_select, self.vol_val, self.label_device_toggle, self.label_vol_set_toggle]
 
         else:
             self.not_authed_label = Gtk.Label(label=self.plugin_base.lm.get("actions.base.not-authed"))
@@ -129,8 +122,6 @@ class VolSetAction(ActionBase):
             settings["device_id"] = None
         if "show_device_label" not in settings:
             settings["show_device_label"] = False
-        if "show_vol_label" not in settings:
-            settings["show_vol_label"] = False
         if "volume" not in settings:
             settings["volume"] = 50
         if "show_set_vol_label" not in settings:
@@ -179,11 +170,6 @@ class VolSetAction(ActionBase):
     def on_toggle_device_label(self, switch, *args):
         settings = self.get_settings()
         settings["show_device_label"] = switch.get_active()
-        self.set_settings(settings)
-
-    def on_toggle_track_label(self, switch, *args):
-        settings = self.get_settings()
-        settings["show_vol_label"] = switch.get_active()
         self.set_settings(settings)
 
     def on_toggle_vol_set_label(self, switch, *args):
