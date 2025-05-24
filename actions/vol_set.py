@@ -46,10 +46,7 @@ class VolSetAction(ActionBase):
                 else:
                     name = settings["device_name"]
                 self.set_bottom_label(str(name))
-            else:
-                self.set_bottom_label("")
-
-            if settings["show_set_vol_label"] == True:
+            elif settings["show_set_vol_label"] == True:
                 self.set_center_label(str(int(settings["volume"])))
             else:
                 self.set_center_label("")
