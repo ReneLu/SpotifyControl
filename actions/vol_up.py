@@ -46,8 +46,11 @@ class VolUpAction(ActionBase):
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-incr-vol-100.png")
 
             if settings["show_vol_label"] == True:
-                self.set_bottom_label(str(self.backend.get_volume(settings["device_id"])))
-            elif settings["show_device_label"] == True:
+                self.set_center_label(str(self.backend.get_volume(settings["device_id"])))
+            else:
+                self.set_center_label("")
+
+            if settings["show_device_label"] == True:
                 if settings["device_id"] == None:
                     name = self.backend.get_active_device_name()
                 else:
