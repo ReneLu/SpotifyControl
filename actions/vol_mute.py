@@ -218,7 +218,7 @@ class VolMuteAction(ActionBase):
             log.debug("Checking device " + elem[0] + " with id " + device_id)
             if elem[1] == device_id:
                 log.debug("Found device " + elem[0] + " with id " + device_id)
-                break
+                return position
             position += 1
         log.debug("Position of device " + elem[0] + " is " + str(position))
         return position
