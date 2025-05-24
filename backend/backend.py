@@ -181,6 +181,25 @@ class SpotifyControlBackend(BackendBase):
         self.last_active_api_call = time.time()
 
     ### Player Control ###
+    def get_devices(self):
+        """
+        Get the list of devices
+        """
+        if not self.is_authed():
+            log.debug("Spotify is not authenticated")
+            return None
+
+        if self.deviceList is None:
+            log.debug("No devices found")
+            return None
+
+        if 'devices' in self.deviceList:
+            log.debug("Devices found: " + str(len(self.deviceList['devices'])))
+            return self.deviceList['devices']
+        else:
+            log.debug("No devices found")
+            return None
+
     def get_active_device_id(self):
         """
         Get the active device ID
