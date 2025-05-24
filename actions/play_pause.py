@@ -167,6 +167,10 @@ class PlayPauseAction(ActionBase):
         Get the index of the device id within the combo box
         """
         position = 0
+        if device_id is None:
+            log.debug("Device id is None => Device is the current active device")
+            return 0
+
         for elem in self.devices_model:
             log.debug("Checking device " + elem[0] + " with id " + device_id)
             if elem[1] == device_id:
