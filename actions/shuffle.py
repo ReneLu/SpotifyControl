@@ -35,20 +35,11 @@ class ShuffleAction(ActionBase):
             if self.backend.get_shuffle_mode() == True:
                 #log.debug("Shuffle mode is ON")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-100.png")
-                self.set_top_label("")
-                self.set_center_label("")
-                self.set_bottom_label("")
             elif self.backend.get_shuffle_mode() == False:
                 #log.debug("Shuffle mode is OFF")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-off-100.png")
-                self.set_top_label("")
-                self.set_center_label("")
-                self.set_bottom_label("")
             else:
                 #log.debug("Shuffle mode is None")
-                self.set_top_label("")
-                self.set_center_label("")
-                self.set_bottom_label("")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-no-music-100.png")
         self.set_media(media_path=icon_path, size=0.75)
 
