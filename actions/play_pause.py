@@ -45,10 +45,8 @@ class PlayPauseAction(ActionBase):
             else:
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-play-100.png")
 
-            self.set_top_label("")
-            self.set_center_label("")
-            if settings["show_label"] == True:
-                if settings["device_name"] == None:
+            if settings["show_device_label"] == True:
+                if settings["device_id"] == None:
                     name = self.backend.get_active_device_name()
                 else:
                     name = settings["device_name"]

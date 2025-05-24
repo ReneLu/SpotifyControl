@@ -36,20 +36,15 @@ class NextTrackAction(ActionBase):
         else:
             self.backend.set_action_active(True)
             settings = self.get_settings()
-            self.set_center_label("")
-            if settings["show_track_label"] == True:
-                self.set_bottom_label("Next Track")
-            else:
-                self.set_bottom_label("")
 
             if settings["show_device_label"] == True:
-                if settings["device_name"] == None:
+                if settings["device_id"] == None:
                     name = self.backend.get_active_device_name()
                 else:
                     name = settings["device_name"]
                 self.set_bottom_label(str(name))
             else:
-                self.set_top_label("")
+                self.set_bottom_label("")
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-track-forward-100.png")
         self.set_media(media_path=icon_path, size=0.75)
 
