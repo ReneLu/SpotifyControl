@@ -35,35 +35,23 @@ class RepeatAction(ActionBase):
             self.backend.set_action_active(True)
             settings = self.get_settings()
             if settings["show_device_label"] == True:
-                if settings["device_name"] == None:
+                if settings["device_id"] == None:
                     name = self.backend.get_active_device_name()
                 else:
                     name = settings["device_name"]
                 self.set_bottom_label(str(name))
             else:
-                self.set_top_label("")
+                self.set_bottom_label("")
 
             repeat_state = self.backend.get_current_repeat_state()
             if repeat_state == "off":
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-repeat-off-100.png")
-                self.set_top_label("")
-                self.set_center_label("")
-                self.set_bottom_label("")
             elif repeat_state == "context":
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-repeat-100.png")
-                self.set_top_label("")
-                self.set_center_label("")
-                self.set_bottom_label("")
             elif repeat_state == "track":
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-repeat-1-100.png")
-                self.set_top_label("")
-                self.set_center_label("")
-                self.set_bottom_label("")
             else:
                 log.debug("Repeat mode is None")
-                self.set_top_label("")
-                self.set_center_label("")
-                self.set_bottom_label("")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-repeat-no-music-100.png")
         self.set_media(media_path=icon_path, size=0.75)
 

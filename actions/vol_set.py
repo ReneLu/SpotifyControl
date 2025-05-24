@@ -41,13 +41,13 @@ class VolSetAction(ActionBase):
 
             # Set Labels
             if settings["show_device_label"] == True:
-                if settings["device_name"] == None:
+                if settings["device_id"] == None:
                     name = self.backend.get_active_device_name()
                 else:
                     name = settings["device_name"]
                 self.set_bottom_label(str(name))
             else:
-                self.set_top_label("")
+                self.set_bottom_label("")
 
             if settings["show_set_vol_label"] == True:
                 self.set_center_label(str(int(settings["volume"])))
