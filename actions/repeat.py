@@ -35,7 +35,7 @@ class RepeatAction(ActionBase):
             self.backend.set_action_active(True)
             settings = self.get_settings()
             if settings["show_device_label"] == True:
-                if settings["device_id"] == None:
+                if settings["device_id"] is None:
                     name = self.backend.get_active_device_name()
                 else:
                     name = settings["device_name"]
