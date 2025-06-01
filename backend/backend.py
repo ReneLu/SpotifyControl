@@ -166,7 +166,7 @@ class SpotifyControlBackend(BackendBase):
                     self.deviceList= self.spotifyObject.devices()
                     log.debug("Devices: " + str(self.deviceList))
                 except spotipy.exceptions.SpotifyException as e:
-                    log.error("Error updating spofity data: " + str(e))
+                    log.error("Error updating spotify data: " + str(e))
                     if e.http_status == 401 or e.http_status == 403:
                         log.error("Spotify token is not valid. Reauthenticating...")
                         self.current_playback_response = None
