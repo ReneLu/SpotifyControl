@@ -163,13 +163,26 @@ class SpotifyControlBackend(BackendBase):
                 try:
                     self.current_playback_response = self.spotifyObject.current_playback()
                     log.debug("Current playback: " + str(self.current_playback_response))
-                except spotipy.exceptions.SpotifyException as e:
-                    log.error("Error getting current playback: " + str(e))
-                try:
                     self.deviceList= self.spotifyObject.devices()
                     log.debug("Devices: " + str(self.deviceList))
                 except spotipy.exceptions.SpotifyException as e:
-                    log.error("Error getting devices: " + str(e))
+                    log.error("Error updating spofity data: " + str(e))
+                    if e.http_status == 401 or e.http_status == 403:
+                        log.error("Spotify token is not valid. Reauthenticating...")
+                        self.current_playback_response = None
+                        self.deviceList = None
+                        self.reauthenticate(self.client_id, self.port)
+                    elif e.http_status == 404:
+                        log.error("Spotify API not found. Check your client ID and port.")
+                        self.current_playback_response = None
+                        self.deviceList = None
+                    elif e.http_status == 429:
+                        log.error("Spotify API rate limit exceeded. Waiting before retrying...")
+                        time.sleep(int(e.headers.get('Retry-After', 1)))
+                    else:
+                        log.error("Spotify API error: " + str(e))
+                        self.current_playback_response = None
+                        self.deviceList = None
             time.sleep(1)
 
     def set_action_active(self, active: bool):
