@@ -157,6 +157,7 @@ class SpotifyControlBackend(BackendBase):
             while time.time() - self.last_active_api_call > 5:
                 # Wait for action on ticked API call
                 self.current_playback_response = None
+                time.sleep(1)
 
             if self.is_authed():
                 try:
