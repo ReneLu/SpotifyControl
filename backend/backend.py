@@ -154,7 +154,6 @@ class SpotifyControlBackend(BackendBase):
         while True:
 
             log.debug("Ticked API call")
-            # self.action_active = False  # Must be set to True from an action to keep thread alive
             while time.time() - self.last_active_api_call > 5:
                 # Wait for action on ticked API call
                 self.current_playback_response = None
@@ -190,7 +189,6 @@ class SpotifyControlBackend(BackendBase):
         Set the action active
         """
         log.debug("Set action active: " + str(active))
-        self.action_active = active
         self.last_active_api_call = time.time()
 
     ### Player Control ###
