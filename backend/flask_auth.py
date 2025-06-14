@@ -48,7 +48,7 @@ class FlaskAuth(threading.Thread):
             self.token = request.args.get("code")
             if self.plugin_backend.complete_authentication(self.token):
                 return f'<h2>You can now close this browser tab and continue in Stream Controller</h2>'
-        return f'<h2>YError on getting the token. Please close this window and retry the validation.</h2>'
+        return f'<h2>Error on getting the token. Please close this window and retry the validation.</h2>'
 
 def start_server(backend, port):
     global server
