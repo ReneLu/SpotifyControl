@@ -119,7 +119,6 @@ class PluginSettings:
         settings = self._plugin_base.get_settings()
         client_id = settings.get(KEY_CLIENT_ID)
         port = settings.get(KEY_PORT_REDIRECT_URI)
-        self._plugin_base.auth_callback_fn = self._on_auth_completed
         if not self._plugin_base.backend.update_client_credentials(client_id, port):
             self._update_status(self._plugin_base.lm.get(
                 "actions.base.credentials.missing_client_info"), True)
