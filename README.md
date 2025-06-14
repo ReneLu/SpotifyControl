@@ -57,8 +57,8 @@ You can also see on the Spotify Control Plugin [Issue Board](https://github.com/
 
 If your Issue isn't in the Issue Board you can create a new Issue from the Templates.
 
-### Get help with smaler problems
-You can join the stream controller [Discord Server](https://discord.gg/MSyHM8TN3u). There you can get help from other or from me by contacting K!ll3rT. But I dont look into discord evry day.
+### Get help with smaller problems
+You can join the stream controller [Discord Server](https://discord.gg/MSyHM8TN3u). There you can get help from others or from me by contacting K!ll3rT. But I don't look into Discord every day.
 
 
 ## Attributions
