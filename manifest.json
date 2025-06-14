@@ -1,5 +1,5 @@
 {
-    "version": "0.0.1-alpha",
+    "version": "0.1.1-beta",
     "thumbnail": "store/Thumbnail.png",
     "id": "com_ReneLu_spotifyControl",
     "name": "Spotify Control",
@@ -11,6 +11,6 @@
     "short-descriptions": {
       "en_US": "Control your Spotify from your Stream Deck. Play, pause, skip tracks, and more."
     },
-    "minimum-app-version": "1.5.0-beta.10",
+    "minimum-app-version": "1.5.0-beta.11",
   "tags": ["Spotify","Music","Control", "Multimdia"]
 }
