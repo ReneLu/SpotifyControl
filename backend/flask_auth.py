@@ -3,6 +3,7 @@ import os
 from flask import Flask, request
 import threading
 from werkzeug.serving import make_server
+from loguru import logger as log
 
 server = None
 
@@ -13,11 +14,12 @@ class FlaskAuth(threading.Thread):
 
     app_thread = None
 
-    def __init__(self, port):
+    def __init__(self, backend, port):
         threading.Thread.__init__(self)
 
         self.port = port
         self.redirect_uri = "http://127.0.0.1:" + str(port)
+        self.plugin_backend = backend
 
         self.app = Flask(__name__)
         self.app.config['SECRET_KEY'] = os.urandom(64)
@@ -44,16 +46,24 @@ class FlaskAuth(threading.Thread):
         if request.args.get("code"):
             # Being redirected from Spotify auth page
             self.token = request.args.get("code")
-        return f'<h2>You can now close this browser tab and continue in Stream Controller</h2>'
+            if self.plugin_backend.complete_authentication(self.token):
+                return f'<h2>You can now close this browser tab and continue in Stream Controller</h2>'
+        return f'<h2>YError on getting the token. Please close this window and retry the validation.</h2>'
 
-def start_server(port):
+def start_server(backend, port):
     global server
     # App routes defined here
-    print("Setup Server on port: ", port)
-    server = FlaskAuth(port)
+    log.debug("Setup Server on port: " + str(port))
+    server = FlaskAuth(backend, port)
     server.token = None
-    print("Starting Server...")
+    log.debug("Starting Server...")
     server.start()
+
+def get_server_status():
+    global server
+    if server is None or not server.is_alive():
+        return False
+    return True
 
 def stop_server():
     global server
