@@ -172,6 +172,10 @@ class NextTrackAction(ActionBase):
             log.debug("Device id is None => Device is the current active device")
             return 0
 
+        if len(self.devices_model) == 0:
+            log.debug("Device model is empty, returning position 0")
+            return 0
+
         for elem in self.devices_model:
             log.debug("Checking device " + elem[0] + " with id " + device_id)
             if elem[1] == device_id:
