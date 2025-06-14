@@ -103,16 +103,20 @@ class SpotifyControlBackend(BackendBase):
             # Remove not valid token
             if os.path.isfile(CACHE_PATH):
                 os.remove(CACHE_PATH)
-            flaskApp.start_server(self.port)
+            flaskApp.start_server(self, self.port)
             webbrowser.open_new_tab(self.auth_manager.get_authorize_url())
-            # Wait for Token set from Flask Server
-            while not flaskApp.server.get_token():
-                pass
-            self.auth_manager.get_access_token(flaskApp.server.get_token())
-
-            flaskApp.stop_server()
 
         self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
+
+    def complete_authentication(self, token) -> bool:
+        """
+        Call this after the user has authenticated in the browser.
+        """
+        if token:
+            self.auth_manager.get_access_token(token)
+            self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
+            return True
+        return False
 
     def reauthenticate(self, client_id: str, port: int):
         """
@@ -249,6 +253,9 @@ class SpotifyControlBackend(BackendBase):
             if self.auth_manager:
                 if self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
                     log.debug("Token is valid")
+                    if flaskApp.get_server_status():
+                        log.debug("Flask server is running")
+                        flaskApp.stop_server()
                     return True
         return False
 
