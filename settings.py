@@ -25,11 +25,6 @@ class PluginSettings:
         client_id = settings.get(KEY_CLIENT_ID, "")
         port = settings.get(KEY_PORT_REDIRECT_URI, "")
 
-        try:
-            self._plugin_base.backend.reauthenticate(client_id, port)
-        except Exception as e:
-            log.error(f"Error checking authentication status: {e}")
-
     def get_settings_area(self) -> Adw.PreferencesGroup:
 
         log.debug("Creating settings area")
