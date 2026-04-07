@@ -24,7 +24,7 @@ class SpotifyControlBackend(BackendBase):
 
     # User Credetials
     client_id = None
-    port = None
+    port = 0
     redirect_uri = None
 
     scope = "user-read-playback-state user-modify-playback-state user-read-currently-playing app-remote-control"
@@ -46,6 +46,8 @@ class SpotifyControlBackend(BackendBase):
                                                     open_browser=True)
             if self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
                 self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
+
+        self.reauthenticate(str(self.client_id), self.port)
 
         self.ticked_api_call_thread = threading.Thread(target=self.ticked_api_call)
         self.ticked_api_call_thread.daemon = True
