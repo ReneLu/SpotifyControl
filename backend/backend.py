@@ -8,6 +8,8 @@ import flask_auth as flaskApp
 import threading, time
 
 CACHE_PATH = os.path.join(os.path.dirname(__file__), ".cache")
+KEY_CLIENT_ID = "client_id"
+KEY_PORT_REDIRECT_URI = "port_redirect_uri"
 
 class SpotifyControlBackend(BackendBase):
 
@@ -24,16 +26,25 @@ class SpotifyControlBackend(BackendBase):
 
     # User Credetials
     client_id = None
-    port = None
+    port: int = 0
     redirect_uri = None
 
     scope = "user-read-playback-state user-modify-playback-state user-read-currently-playing app-remote-control"
 
     def __init__(self):
         super().__init__()
-        # log.debug("Initialize SpotifyControlBackend")
-        # log.debug("Client ID: " + str(self.client_id))
-        # log.debug("Port: " + str(self.port))
+
+        # Load stored credentials
+        self.client_id = self.get_setting(KEY_CLIENT_ID, "")
+        raw_port = self.get_setting(KEY_PORT_REDIRECT_URI, 8080)
+        try:
+            self.port = int(float(raw_port))
+        except (TypeError, ValueError):
+            self.port = 8080
+
+        log.debug("Initialize SpotifyControlBackend")
+        log.debug("Client ID: " + str(self.client_id))
+        log.debug("Port: " + str(self.port))
 
         self.cache_handler = spotipy.cache_handler.CacheFileHandler(CACHE_PATH)
         if os.path.isfile(CACHE_PATH) and self.client_id and self.port:
@@ -47,12 +58,18 @@ class SpotifyControlBackend(BackendBase):
             if self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
                 self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
 
+        if not self.reauthenticate(str(self.client_id), self.port):
+            log.error("Failed to authenticate with cached credentials")
+
         self.ticked_api_call_thread = threading.Thread(target=self.ticked_api_call)
         self.ticked_api_call_thread.daemon = True
         self.ticked_api_call_thread.start()
         # log.debug("Ticked API call thread started")
 
     ### Setters and Getters ###
+    def get_setting(self, key: str, default = None):
+        return self.frontend.get_settings().get(key, default)
+
     def set_client_id(self, client_id: str):
         """
         Set the client ID
@@ -122,7 +139,9 @@ class SpotifyControlBackend(BackendBase):
         """
         Reauthenticate the user
         """
+        log.debug("Reauthenticating user with client ID: " + str(client_id) + " and port: " + str(port))
         if None in (client_id, port) or "" in (client_id, port):
+            log.debug("Client ID or port is None or empty")
             return False
 
         self.client_id = client_id
@@ -144,8 +163,12 @@ class SpotifyControlBackend(BackendBase):
             # log.debug("Token is not valid")
             return False
 
-        self.auth_manager.get_access_token(CACHE_PATH)
-        self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
+        try:
+            self.auth_manager.get_access_token(CACHE_PATH)
+            self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
+        except (spotipy.exceptions.SpotifyException, spotipy.oauth2.SpotifyOauthError) as e:
+            log.error("Failed to create Spotify object: " + str(e))
+            return False
 
         return True
 
