@@ -57,7 +57,7 @@ class PlayPauseAction(ActionBase):
         # Toggle shuffle mode
         log.debug("Toggle Play / Pause mode")
         settings = self.actionSettings.get_settings()
-        selected_device = settings["device_id"]
+        selected_device = settings["device_id_" + self.actionName]
         if self.backend.is_authed():
             if self.backend.get_playback_state() == True:
                 log.debug("Playing a song. Pause it.")
