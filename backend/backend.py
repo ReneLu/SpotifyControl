@@ -31,14 +31,14 @@ class SpotifyControlBackend(BackendBase):
 
     def __init__(self):
         super().__init__()
-        log.debug("Initialize SpotifyControlBackend")
-        log.debug("Client ID: " + str(self.client_id))
-        log.debug("Port: " + str(self.port))
+        # log.debug("Initialize SpotifyControlBackend")
+        # log.debug("Client ID: " + str(self.client_id))
+        # log.debug("Port: " + str(self.port))
 
         self.cache_handler = spotipy.cache_handler.CacheFileHandler(CACHE_PATH)
         if os.path.isfile(CACHE_PATH) and self.client_id and self.port:
             self.redirect_uri = "http://127.0.0.1:" + str(self.port)
-            log.debug("Cache file found")
+            # log.debug("Cache file found")
             self.auth_manager = spotipy.oauth2.SpotifyPKCE(scope=self.scope,
                                                     redirect_uri = self.redirect_uri,
                                                     client_id = self.client_id,
@@ -50,7 +50,7 @@ class SpotifyControlBackend(BackendBase):
         self.ticked_api_call_thread = threading.Thread(target=self.ticked_api_call)
         self.ticked_api_call_thread.daemon = True
         self.ticked_api_call_thread.start()
-        log.debug("Ticked API call thread started")
+        # log.debug("Ticked API call thread started")
 
     ### Setters and Getters ###
     def set_client_id(self, client_id: str):
@@ -130,7 +130,7 @@ class SpotifyControlBackend(BackendBase):
         self.redirect_uri = "http://127.0.0.1:" + str(self.port)
 
         if not os.path.isfile(CACHE_PATH):
-            log.debug("Cache file not found")
+            # log.debug("Cache file not found")
             return False
 
         self.cache_handler = spotipy.cache_handler.CacheFileHandler(CACHE_PATH)
@@ -141,7 +141,7 @@ class SpotifyControlBackend(BackendBase):
                                                 open_browser=True)
 
         if not self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
-            log.debug("Token is not valid")
+            # log.debug("Token is not valid")
             return False
 
         self.auth_manager.get_access_token(CACHE_PATH)
@@ -157,7 +157,7 @@ class SpotifyControlBackend(BackendBase):
         self.ticked_api_call_thread_started = True
         while True:
 
-            log.debug("Ticked API call")
+            # log.debug("Ticked API call")
             while time.time() - self.last_active_api_call > 5:
                 # Wait for action on ticked API call
                 self.current_playback_response = None
@@ -166,9 +166,9 @@ class SpotifyControlBackend(BackendBase):
             if self.is_authed():
                 try:
                     self.current_playback_response = self.spotifyObject.current_playback()
-                    log.debug("Current playback: " + str(self.current_playback_response))
+                    # log.debug("Current playback: " + str(self.current_playback_response))
                     self.deviceList= self.spotifyObject.devices()
-                    log.debug("Devices: " + str(self.deviceList))
+                    # log.debug("Devices: " + str(self.deviceList))
                 except spotipy.exceptions.SpotifyException as e:
                     log.error("Error updating spotify data: " + str(e))
                     if e.http_status == 401 or e.http_status == 403:
@@ -193,7 +193,7 @@ class SpotifyControlBackend(BackendBase):
         """
         Set the action active
         """
-        log.debug("Set action active: " + str(active))
+        ## log.debug("Set action active: " + str(active))
         self.last_active_api_call = time.time()
 
     ### Player Control ###
@@ -202,18 +202,18 @@ class SpotifyControlBackend(BackendBase):
         Get the list of devices
         """
         if not self.is_authed():
-            log.debug("Spotify is not authenticated")
+            # log.debug("Spotify is not authenticated")
             return None
 
         if self.deviceList is None:
-            log.debug("No devices found")
+            # log.debug("No devices found")
             return None
 
         if 'devices' in self.deviceList:
-            log.debug("Devices found: " + str(len(self.deviceList['devices'])))
+            # log.debug("Devices found: " + str(len(self.deviceList['devices'])))
             return self.deviceList['devices']
         else:
-            log.debug("No devices found")
+            # log.debug("No devices found")
             return None
 
     def get_active_device_id(self):
@@ -221,12 +221,12 @@ class SpotifyControlBackend(BackendBase):
         Get the active device ID
         """
         if self.deviceList is None:
-            log.debug("No devices found")
+            # log.debug("No devices found")
             return None
 
         for device in self.deviceList['devices']:
             if device['is_active']:
-                log.debug("Active Device id: " + str(device['id']))
+                # log.debug("Active Device id: " + str(device['id']))
                 return device['id']
         return None
 
@@ -235,12 +235,12 @@ class SpotifyControlBackend(BackendBase):
         Get the active device ID
         """
         if self.deviceList is None:
-            log.debug("No devices found")
+            # log.debug("No devices found")
             return None
 
         for device in self.deviceList['devices']:
             if device['is_active']:
-                log.debug("Active Device name: " + str(device['name']))
+                # log.debug("Active Device name: " + str(device['name']))
                 return device['name']
         return None
 
@@ -249,12 +249,12 @@ class SpotifyControlBackend(BackendBase):
         Check if the user is authenticated
         """
         if os.path.isfile(CACHE_PATH):
-            log.debug("Cache file found")
+            # log.debug("Cache file found")
             if self.auth_manager:
                 if self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
-                    log.debug("Token is valid")
+                    # log.debug("Token is valid")
                     if flaskApp.get_server_status():
-                        log.debug("Flask server is running")
+                        # log.debug("Flask server is running")
                         flaskApp.stop_server()
                     return True
         return False
@@ -264,12 +264,12 @@ class SpotifyControlBackend(BackendBase):
         Get the current shuffle mode
         """
         if not self.get_active_device_id():
-            return None
+            return False
 
         curPlayback = self.current_playback_response
         if curPlayback is None:
-            log.debug("No current playback")
-            return None
+            # log.debug("No current playback")
+            return False
         return curPlayback['shuffle_state']
 
     def shuffle(self, shuffle: bool, device_id=None) -> None:
@@ -292,7 +292,7 @@ class SpotifyControlBackend(BackendBase):
 
         curPlayback = self.current_playback_response
         if curPlayback is None:
-            log.debug("No current playback")
+            # log.debug("No current playback")
             return None
 
         return curPlayback['is_playing']
@@ -306,7 +306,7 @@ class SpotifyControlBackend(BackendBase):
 
         if device_id is None:   # No active Device found
             return
-        log.debug("Pause on device: " + str(device_id))
+        # log.debug("Pause on device: " + str(device_id))
         self.spotifyObject.pause_playback(device_id=device_id)
 
     def play(self, device_id) -> None:
@@ -318,7 +318,7 @@ class SpotifyControlBackend(BackendBase):
 
         if device_id is None:   # No active Device found
             return
-        log.debug("Play on device: " + str(device_id))
+        # log.debug("Play on device: " + str(device_id))
         self.spotifyObject.start_playback(device_id=device_id)
 
     def next_track(self, device_id) -> None:
@@ -330,7 +330,7 @@ class SpotifyControlBackend(BackendBase):
 
         if device_id is None:   # No active Device found
             return
-        log.debug("Next track on device: " + str(device_id))
+        # log.debug("Next track on device: " + str(device_id))
         self.spotifyObject.next_track(device_id=device_id)
 
     def previous_track(self, device_id) -> None:
@@ -342,7 +342,7 @@ class SpotifyControlBackend(BackendBase):
 
         if device_id is None:   # No active Device found
             return
-        log.debug("Previous track on device: " + str(device_id))
+        # log.debug("Previous track on device: " + str(device_id))
         self.spotifyObject.previous_track(device_id=device_id)
 
     def set_volume(self, volume: int, device_id) -> None:
@@ -351,21 +351,21 @@ class SpotifyControlBackend(BackendBase):
         """
         if device_id is None:
             device_id = self.get_active_device_id()
-        log.debug("Set volume on device: " + str(device_id) + " to " + str(volume))
+        # log.debug("Set volume on device: " + str(device_id) + " to " + str(volume))
         self.spotifyObject.volume(int(volume), device_id=device_id)
 
-    def get_volume(self, device_id) -> int:
+    def get_volume(self) -> int:
         """
         Get the current volume
         """
         curPlayback = self.current_playback_response
         if curPlayback is None:
-            log.debug("No current playback")
+            # log.debug("No current playback")
             return None
         if curPlayback['device']['supports_volume']:
             return curPlayback['device']['volume_percent']
         else:
-            log.debug("Device " + str(curPlayback['name']) +
+            # log.debug("Device " + str(curPlayback['name']) +
                     " does not support volume control")
             return None
 
@@ -383,7 +383,7 @@ class SpotifyControlBackend(BackendBase):
         if device_id is None:   # No active Device found
             return
 
-        log.debug("Set repeat on device: " + str(device_id) + " to " + str(repeat))
+        # log.debug("Set repeat on device: " + str(device_id) + " to " + str(repeat))
         self.spotifyObject.repeat(repeat, device_id)
 
     def get_current_repeat_state(self) -> str:
@@ -395,10 +395,33 @@ class SpotifyControlBackend(BackendBase):
 
         curPlayback = self.current_playback_response
         if curPlayback is None:
-            log.debug("No current playback")
+            # log.debug("No current playback")
             return None
 
         return curPlayback['repeat_state'] # context - Repeat playlist, track - Repeat track, off - Repeat off
 
+    def get_current_track_info(self) -> dict:
+        """
+        Get the current track info
+        """
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            # log.debug("No current playback")
+            return None
+
+        if 'item' in curPlayback and curPlayback['item'] is not None:
+            track_info = {
+                'name': curPlayback['item']['name'],
+                'artists': [artist['name'] for artist in curPlayback['item']['artists']],
+                'album': curPlayback['item']['album']['name'],
+                'duration_ms': curPlayback['item']['duration_ms'],
+                'progress_ms': curPlayback['progress_ms']
+            }
+            # log.debug("Current track info: " + str(track_info))
+            return track_info
+        else:
+            # log.debug("No track is currently playing")
+            return None
+
 backend = SpotifyControlBackend()
-log.debug("SpotifyControlBackend initialized")
+# log.debug("SpotifyControlBackend initialized")

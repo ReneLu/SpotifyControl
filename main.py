@@ -3,6 +3,7 @@ import os
 # Import StreamController modules
 from src.backend.PluginManager.PluginBase import PluginBase
 from src.backend.PluginManager.ActionHolder import ActionHolder
+from loguru import logger as log
 
 # Import actions
 from .actions.shuffle import ShuffleAction
@@ -25,6 +26,7 @@ class SpotifyControl(PluginBase):
         self.lm.set_to_os_default()
 
         ## Launch backend
+        log.debug("Launching backend")
         backend_path = os.path.join(self.PATH, "backend", "backend.py")
         self.launch_backend(backend_path=backend_path, open_in_terminal=False,
                             venv_path=os.path.join(self.PATH, "backend", '.venv'))

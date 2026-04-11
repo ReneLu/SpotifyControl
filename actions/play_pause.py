@@ -30,13 +30,15 @@ class PlayPauseAction(ActionBase):
         self.has_configuration = True
         self.actionSettings = ActionSettings(self.actionName, self.backend)
         self.Texts = Texts
-        self.actionSettings.set_settings_defaults()
 
     def on_ready(self) -> None:
         self.actionSettings.set_settings_defaults()
         self.on_tick()
 
     def on_tick(self) -> None:
+        if self.backend is None:
+            log.error("Spotify backend is not available")
+            return
         if not self.backend.is_authed():
             #log.debug("Spotify is not authenticated")
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
