@@ -398,19 +398,23 @@ class ActionSettings(ActionBase):
 
     def get_text(self, text_type: Texts) -> str:
         self.backend.set_action_active(True)
-
         settings = self.get_settings()
-        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.NONE:
+
+        if settings is None:
+            log.error("Settings is None, returning empty string")
             return ""
-        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.DEVICE_NAME:
+
+        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.NONE.value:
+            return ""
+        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.DEVICE_NAME.value:
             return self.backend.get_active_device_name()
-        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.TRACK_NAME:
+        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.TRACK_NAME.value:
             track = self.backend.get_current_track_info()
             if track is not None and "name" in track:
                 return track["name"]
             else:
                 return ""
-        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.ARTIST_NAME:
+        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.ARTIST_NAME.value:
             track = self.backend.get_current_track_info()
             if track is not None and "artists" in track and len(track["artists"]) > 0:
                 artists_names = ""
@@ -419,16 +423,19 @@ class ActionSettings(ActionBase):
                 return artists_names.rstrip(", ")
             else:
                 return ""
-        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.ALBUM_NAME:
+        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.ALBUM_NAME.value:
             track = self.backend.get_current_track_info()
             if track is not None and "album" in track:
                 return track["album"]
             else:
                 return ""
-        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.VOLUME:
+        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.VOLUME.value:
             volume = self.backend.get_volume()
             if volume is not None:
                 return str(volume) + "%"
             else:
                 return ""
+
+        log.error("Text option " + text_type.value + "_text_" + self.actionName + " is unknown, returning empty string")
+        log.error("Settings: " + str(settings))
         return ""
