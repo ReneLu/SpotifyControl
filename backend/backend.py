@@ -163,10 +163,11 @@ class SpotifyControlBackend(BackendBase):
             log.debug("Token is not valid")
             return False
 
-        self.auth_manager.get_access_token(CACHE_PATH)
-        self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
-        if self.spotifyObject is None:
-            log.debug("Failed to create Spotify object")
+        try:
+            self.auth_manager.get_access_token(CACHE_PATH)
+            self.spotifyObject = spotipy.Spotify(auth_manager=self.auth_manager)
+        except (spotipy.exceptions.SpotifyException, spotipy.oauth2.SpotifyOauthError) as e:
+            log.error("Failed to create Spotify object: " + str(e))
             return False
 
         return True
