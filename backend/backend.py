@@ -388,8 +388,6 @@ class SpotifyControlBackend(BackendBase):
         if curPlayback['device']['supports_volume']:
             return curPlayback['device']['volume_percent']
         else:
-            # log.debug("Device " + str(curPlayback['name']) +
-                    " does not support volume control")
             return None
 
     def repeat(self, repeat: str, device_id) -> None:
