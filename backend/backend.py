@@ -36,7 +36,11 @@ class SpotifyControlBackend(BackendBase):
 
         # Load stored credentials
         self.client_id = self.get_setting(KEY_CLIENT_ID, "")
-        self.port = self.get_setting(KEY_PORT_REDIRECT_URI, 8080)
+        raw_port = self.get_setting(KEY_PORT_REDIRECT_URI, 8080)
+        try:
+            self.port = int(float(raw_port))
+        except (TypeError, ValueError):
+            self.port = 8080
 
         log.debug("Initialize SpotifyControlBackend")
         log.debug("Client ID: " + str(self.client_id))
