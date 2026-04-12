@@ -17,12 +17,12 @@ from gi.repository import Gtk
 from loguru import logger as log
 
 class TextOptions(Enum):
+    NONE = "none"
     TRACK_NAME = "track_name"
     ARTIST_NAME = "artist_name"
     ALBUM_NAME = "album_name"
     DEVICE_NAME = "device_name"
     VOLUME = "volume"
-    NONE = "none"
 
 class Texts(Enum):
     TOP = "top"
@@ -35,12 +35,12 @@ DATA_PATH = os.path.join(VAR_APP_PATH, "data")
 class ActionSettings(ActionBase):
 
     text_settings = {
+        TextOptions.NONE: "",
         TextOptions.TRACK_NAME: "",
         TextOptions.ARTIST_NAME: "",
         TextOptions.ALBUM_NAME: "",
         TextOptions.DEVICE_NAME: "",
-        TextOptions.VOLUME: "",
-        TextOptions.NONE: ""
+        TextOptions.VOLUME: ""
     }
 
     top_text_setting = ""
@@ -56,12 +56,12 @@ class ActionSettings(ActionBase):
         self.backend = backend
 
         self.text_settings = {
+            TextOptions.NONE: "None",
             TextOptions.TRACK_NAME: "Track Name",
             TextOptions.ARTIST_NAME: "Artist Name",
             TextOptions.ALBUM_NAME: "Album Name",
             TextOptions.DEVICE_NAME: "Device Name",
-            TextOptions.VOLUME: "Volume",
-            TextOptions.NONE: "None",
+            TextOptions.VOLUME: "Volume"
         }
 
         self.top_text_setting = self.text_settings[TextOptions.NONE]
@@ -232,8 +232,6 @@ class ActionSettings(ActionBase):
         # If the device is not in the list, set it to 0 and set settings to the first device
         self.devices_select.combo_box.set_active(self.get_index_of_id(settings["device_id_" + self.actionName]))
 
-        self.set_settings(settings)
-
     def update_top_text_selector(self):
         """
         Update the top text selector with the available options
@@ -252,11 +250,12 @@ class ActionSettings(ActionBase):
             for elem in self.Top_Text_model:
                 if elem[1] == settings["top_text_" + self.actionName]:
                     self.Top_Text_select.combo_box.set_active(position)
-                    break
+                    return
                 position += 1
-        else:
-            self.Top_Text_select.combo_box.set_active(0)
-            settings["top_text_" + self.actionName] = self.text_settings[TextOptions.NONE]
+
+        # If no valid option found select the first one and set it in the settings
+        self.Top_Text_select.combo_box.set_active(0)
+        settings["top_text_" + self.actionName] = self.text_settings[TextOptions.NONE]
         self.set_settings(settings)
 
     def update_middle_text_selector(self):
@@ -277,12 +276,13 @@ class ActionSettings(ActionBase):
             for elem in self.Middle_Text_model:
                 if elem[1] == settings["middle_text_" + self.actionName]:
                     self.Middle_Text_select.combo_box.set_active(position)
-                    break
+                    return
                 position += 1
-        else:
-            self.Middle_Text_select.combo_box.set_active(0)
-            settings["middle_text_" + self.actionName] = self.text_settings[TextOptions.NONE]
-            self.set_settings(settings)
+
+        # If no valid option found select the first one and set it in the settings
+        self.Middle_Text_select.combo_box.set_active(0)
+        settings["middle_text_" + self.actionName] = self.text_settings[TextOptions.NONE]
+        self.set_settings(settings)
 
     def update_bottom_text_selector(self):
         """
@@ -302,12 +302,13 @@ class ActionSettings(ActionBase):
             for elem in self.Bottom_Text_model:
                 if elem[1] == settings["bottom_text_" + self.actionName]:
                     self.Bottom_Text_select.combo_box.set_active(position)
-                    break
+                    return
                 position += 1
-        else:
-            self.Bottom_Text_select.combo_box.set_active(0)
-            settings["bottom_text_" + self.actionName] = self.text_settings[TextOptions.NONE]
-            self.set_settings(settings)
+
+        # If no valid option found select the first one and set it in the settings
+        self.Bottom_Text_select.combo_box.set_active(0)
+        settings["bottom_text_" + self.actionName] = self.text_settings[TextOptions.NONE]
+        self.set_settings(settings)
 
     def on_device_select(self, combo_box, *args):
         """
@@ -360,7 +361,7 @@ class ActionSettings(ActionBase):
         Get the index of the device id within the combo box
         """
         position = 0
-        if device_id is None:
+        if device_id is None or device_id == TextOptions.NONE.value or device_id == "" or device_id == "None":
             return 0
 
         if len(self.devices_model) == 0:
@@ -413,5 +414,5 @@ class ActionSettings(ActionBase):
                 return ""
 
         log.error("Text option " + text_type.value + "_text_" + self.actionName + " is unknown, returning empty string")
-        log.error("Settings: " + str(settings))
+        log.error("Setting: " + str(settings[text_type.value + "_text_" + self.actionName]))
         return ""
