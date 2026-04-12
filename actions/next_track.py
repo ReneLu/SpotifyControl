@@ -47,7 +47,6 @@ class NextTrackAction(ActionBase):
         self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
-        # Toggle shuffle mode
         settings = self.actionSettings.get_settings()
         selected_device = settings["device_id_" + self.actionName]
         if self.backend.is_authed():

@@ -10,8 +10,7 @@ import os
 # Import gtk modules - used for the config rows
 import gi
 gi.require_version("Gtk", "4.0")
-gi.require_version("Adw", "1")
-from gi.repository import Gtk, Adw
+from gi.repository import Gtk
 
 from loguru import logger as log
 
