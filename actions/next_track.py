@@ -1,9 +1,6 @@
 # Import StreamController modules
 from GtkHelper.GtkHelper import ComboRow
 from src.backend.PluginManager.ActionBase import ActionBase
-from src.backend.DeckManagement.DeckController import DeckController
-from src.backend.PageManagement.Page import Page
-from src.backend.PluginManager.PluginBase import PluginBase
 
 # Import python modules
 import os
@@ -31,7 +28,6 @@ class NextTrackAction(ActionBase):
 
     def on_tick(self) -> None:
         if not self.backend.is_authed():
-            #log.debug("Spotify is not authenticated")
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
             self.backend.set_action_active(True)
@@ -50,11 +46,9 @@ class NextTrackAction(ActionBase):
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
-        log.debug("Toggle Play / Pause mode")
         settings = self.get_settings()
         selected_device = settings["device_id"]
         if self.backend.is_authed():
-            log.debug("Playing next song.")
             self.backend.next_track(selected_device)
 
     def get_config_rows(self) -> list:
@@ -109,24 +103,20 @@ class NextTrackAction(ActionBase):
         """
         Update the device selector with the available devices
         """
-        log.debug("Updating device selector")
 
         # Clear the model and add the currently active device
         self.devices_model.append(["Currently Active", None])
         self.avail_devices = self.backend.get_devices()
         for device in self.avail_devices:
-            log.debug("Add Device: " + str(device))
             self.devices_model.append([device["name"], device["id"]])
 
         settings = self.get_settings()
 
         # Set index of combo box to last selected device
         # If the device is not in the list, set it to 0 and set settings to the first device
-        log.debug("Selected device in Settings: " + str(settings["device_name"]))
         if settings["device_name"] is not None:
             self.devices_select.combo_box.set_active(self.get_index_of_id(settings["device_id"]))
         else:
-            log.debug("Selected device not in list. Set to 0")
             self.devices_select.combo_box.set_active(0)
             settings["device_name"] = None
             settings["device_id"] = None
@@ -142,7 +132,6 @@ class NextTrackAction(ActionBase):
         settings["device_id"] = self.devices_model[combo_box.get_active()][1]
         self.set_settings(settings)
 
-        log.debug("Device selected: " + self.devices_model[combo_box.get_active()][0])
 
     def on_toggle_device_label(self, switch, *args):
         settings = self.get_settings()
@@ -169,18 +158,13 @@ class NextTrackAction(ActionBase):
         """
         position = 0
         if device_id is None:
-            log.debug("Device id is None => Device is the current active device")
             return 0
 
         if len(self.devices_model) == 0:
-            log.debug("Device model is empty, returning position 0")
             return 0
 
         for elem in self.devices_model:
-            log.debug("Checking device " + elem[0] + " with id " + device_id)
             if elem[1] == device_id:
-                log.debug("Found device " + elem[0] + " with id " + device_id)
                 return position
             position += 1
-        log.debug("Position of device " + elem[0] + " is " + str(position))
         return position

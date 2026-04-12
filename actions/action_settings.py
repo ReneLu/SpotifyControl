@@ -219,7 +219,6 @@ class ActionSettings(ActionBase):
         """
         Update the device selector with the available devices
         """
-        log.debug("Updating device selector")
 
         settings = self.get_settings()
 
@@ -227,12 +226,10 @@ class ActionSettings(ActionBase):
         self.devices_model.append(["Currently Active", None])
         self.avail_devices = self.backend.get_devices()
         for device in self.avail_devices:
-            log.debug("Add Device: " + str(device))
             self.devices_model.append([device["name"], device["id"]])
 
         # Set index of combo box to last selected device
         # If the device is not in the list, set it to 0 and set settings to the first device
-        log.debug("Selected device in Settings: " + str(settings["device_name_" + self.actionName]))
         self.devices_select.combo_box.set_active(self.get_index_of_id(settings["device_id_" + self.actionName]))
 
         self.set_settings(settings)
@@ -241,7 +238,6 @@ class ActionSettings(ActionBase):
         """
         Update the top text selector with the available options
         """
-        log.debug("Updating top text selector")
 
         settings = self.get_settings()
 
@@ -251,17 +247,14 @@ class ActionSettings(ActionBase):
             self.Top_Text_model.append([self.text_settings[option], option.value])
 
         # Set index of combo box to last selected option
-        log.debug("Selected top text in Settings: " + str(settings["top_text_" + self.actionName]))
         if settings["top_text_" + self.actionName] is not None:
             position = 0
             for elem in self.Top_Text_model:
                 if elem[1] == settings["top_text_" + self.actionName]:
-                    log.debug("Found top text " + elem[0] + " with value " + elem[1])
                     self.Top_Text_select.combo_box.set_active(position)
                     break
                 position += 1
         else:
-            log.debug("Selected top text not in list. Set to 0")
             self.Top_Text_select.combo_box.set_active(0)
             settings["top_text_" + self.actionName] = self.text_settings[TextOptions.NONE]
         self.set_settings(settings)
@@ -270,7 +263,6 @@ class ActionSettings(ActionBase):
         """
         Update the middle text selector with the available options
         """
-        log.debug("Updating middle text selector")
 
         settings = self.get_settings()
 
@@ -280,17 +272,14 @@ class ActionSettings(ActionBase):
             self.Middle_Text_model.append([self.text_settings[option], option.value])
 
         # Set index of combo box to last selected option
-        log.debug("Selected middle text in Settings: " + str(settings["middle_text_" + self.actionName]))
         if settings["middle_text_" + self.actionName] is not None:
             position = 0
             for elem in self.Middle_Text_model:
                 if elem[1] == settings["middle_text_" + self.actionName]:
-                    log.debug("Found middle text " + elem[0] + " with value " + elem[1])
                     self.Middle_Text_select.combo_box.set_active(position)
                     break
                 position += 1
         else:
-            log.debug("Selected middle text not in list. Set to 0")
             self.Middle_Text_select.combo_box.set_active(0)
             settings["middle_text_" + self.actionName] = self.text_settings[TextOptions.NONE]
             self.set_settings(settings)
@@ -299,7 +288,6 @@ class ActionSettings(ActionBase):
         """
         Update the bottom text selector with the available options
         """
-        log.debug("Updating bottom text selector")
 
         settings = self.get_settings()
 
@@ -309,17 +297,14 @@ class ActionSettings(ActionBase):
             self.Bottom_Text_model.append([self.text_settings[option], option.value])
 
         # Set index of combo box to last selected option
-        log.debug("Selected bottom text in Settings: " + str(settings["bottom_text_" + self.actionName]))
         if settings["bottom_text_" + self.actionName] is not None:
             position = 0
             for elem in self.Bottom_Text_model:
                 if elem[1] == settings["bottom_text_" + self.actionName]:
-                    log.debug("Found bottom text " + elem[0] + " with value " + elem[1])
                     self.Bottom_Text_select.combo_box.set_active(position)
                     break
                 position += 1
         else:
-            log.debug("Selected bottom text not in list. Set to 0")
             self.Bottom_Text_select.combo_box.set_active(0)
             settings["bottom_text_" + self.actionName] = self.text_settings[TextOptions.NONE]
             self.set_settings(settings)
@@ -333,7 +318,6 @@ class ActionSettings(ActionBase):
         settings["device_id_" + self.actionName] = self.devices_model[combo_box.get_active()][1]
         self.set_settings(settings)
 
-        log.debug("Device selected: " + self.devices_model[combo_box.get_active()][0])
 
     def on_top_text_select(self, combo_box, *args):
         """
@@ -343,7 +327,6 @@ class ActionSettings(ActionBase):
         settings["top_text_" + self.actionName] = self.Top_Text_model[combo_box.get_active()][1]
         self.set_settings(settings)
 
-        log.debug("Top text selected: " + self.Top_Text_model[combo_box.get_active()][0])
 
     def on_middle_text_select(self, combo_box, *args):
         """
@@ -353,7 +336,6 @@ class ActionSettings(ActionBase):
         settings["middle_text_" + self.actionName] = self.Middle_Text_model[combo_box.get_active()][1]
         self.set_settings(settings)
 
-        log.debug("Middle text selected: " + self.Middle_Text_model[combo_box.get_active()][0])
 
     def on_bottom_text_select(self, combo_box, *args):
         """
@@ -363,7 +345,6 @@ class ActionSettings(ActionBase):
         settings["bottom_text_" + self.actionName] = self.Bottom_Text_model[combo_box.get_active()][1]
         self.set_settings(settings)
 
-        log.debug("Bottom text selected: " + self.Bottom_Text_model[combo_box.get_active()][0])
 
     def get_device_id_from_name(self, name: str) -> str:
         """
@@ -380,20 +361,15 @@ class ActionSettings(ActionBase):
         """
         position = 0
         if device_id is None:
-            log.debug("Device id is None => Device is the current active device")
             return 0
 
         if len(self.devices_model) == 0:
-            log.debug("Device model is empty, returning position 0")
             return 0
 
         for elem in self.devices_model:
-            log.debug("Checking device " + elem[0] + " with id " + device_id)
             if elem[1] == device_id:
-                log.debug("Found device " + elem[0] + " with id " + device_id)
                 return position
             position += 1
-            log.debug("Position of device " + elem[0] + " is " + str(position))
         return position
 
     def get_text(self, text_type: Texts) -> str:

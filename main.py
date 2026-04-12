@@ -28,7 +28,6 @@ class SpotifyControl(PluginBase):
         self._settings_manager = PluginSettings(self)
 
         ## Launch backend
-        log.debug("Launching backend")
         backend_path = os.path.join(self.PATH, "backend", "backend.py")
         self.launch_backend(backend_path=backend_path, open_in_terminal=False,
                             venv_path=os.path.join(self.PATH, "backend", '.venv'))

@@ -36,10 +36,8 @@ class PlayPauseAction(ActionBase):
             log.error("Spotify backend is not available")
             return
         if not self.backend.is_authed():
-            #log.debug("Spotify is not authenticated")
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
-            #log.debug("Spotify is authenticated")
             self.set_top_label(self.actionSettings.get_text(self.Texts.TOP))
             self.set_center_label(self.actionSettings.get_text(self.Texts.MIDDLE))
             self.set_bottom_label(self.actionSettings.get_text(self.Texts.BOTTOM))
@@ -55,15 +53,12 @@ class PlayPauseAction(ActionBase):
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
-        log.debug("Toggle Play / Pause mode")
         settings = self.actionSettings.get_settings()
         selected_device = settings["device_id_" + self.actionName]
         if self.backend.is_authed():
             if self.backend.get_playback_state() == True:
-                log.debug("Playing a song. Pause it.")
                 self.backend.pause(selected_device)
             else:
-                log.debug("Song paused. Start playing it.")
                 self.backend.play(selected_device)
 
     def get_config_rows(self) -> list:

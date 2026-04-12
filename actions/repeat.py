@@ -51,27 +51,21 @@ class RepeatAction(ActionBase):
             elif repeat_state == "track":
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-repeat-1-100.png")
             else:
-                log.debug("Repeat mode is None")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-repeat-no-music-100.png")
         self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
-        log.debug("Toggle Repeat mode")
         if self.backend.is_authed():
             repeat_state = self.backend.get_current_repeat_state()
             settings = self.get_settings()
             selected_device = settings["device_id"]
             if repeat_state == "off":
-                log.debug("Repeat mode is Off")
                 self.backend.repeat("context", selected_device)
             elif repeat_state == "context":
-                log.debug("Repeat mode is Context")
                 self.backend.repeat("track", selected_device)
             elif repeat_state == "track":
-                log.debug("Repeat mode is Track")
                 self.backend.repeat("off", selected_device)
             else:
-                log.debug("Repeat mode is None")
                 self.set_top_label("Repeat")
                 self.set_center_label("No Music")
                 self.set_bottom_label("Playing")
@@ -122,24 +116,20 @@ class RepeatAction(ActionBase):
         """
         Update the device selector with the available devices
         """
-        log.debug("Updating device selector")
 
         # Clear the model and add the currently active device
         self.devices_model.append(["Currently Active", None])
         self.avail_devices = self.backend.get_devices()
         for device in self.avail_devices:
-            log.debug("Add Device: " + str(device))
             self.devices_model.append([device["name"], device["id"]])
 
         settings = self.get_settings()
 
         # Set index of combo box to last selected device
         # If the device is not in the list, set it to 0 and set settings to the first device
-        log.debug("Selected device in Settings: " + str(settings["device_name"]))
         if settings["device_name"] is not None:
             self.devices_select.combo_box.set_active(self.get_index_of_id(settings["device_id"]))
         else:
-            log.debug("Selected device not in list. Set to 0")
             self.devices_select.combo_box.set_active(0)
             settings["device_name"] = None
             settings["device_id"] = None
@@ -155,7 +145,6 @@ class RepeatAction(ActionBase):
         settings["device_id"] = self.devices_model[combo_box.get_active()][1]
         self.set_settings(settings)
 
-        log.debug("Device selected: " + self.devices_model[combo_box.get_active()][0])
 
     def on_toggle_device_label(self, switch, *args):
         settings = self.get_settings()
@@ -182,18 +171,13 @@ class RepeatAction(ActionBase):
         """
         position = 0
         if device_id is None:
-            log.debug("Device id is None => Device is the current active device")
             return 0
 
         if len(self.devices_model) == 0:
-            log.debug("Device model is empty, returning position 0")
             return 0
 
         for elem in self.devices_model:
-            log.debug("Checking device " + elem[0] + " with id " + device_id)
             if elem[1] == device_id:
-                log.debug("Found device " + elem[0] + " with id " + device_id)
                 return position
             position += 1
-        log.debug("Position of device " + elem[0] + " is " + str(position))
         return position

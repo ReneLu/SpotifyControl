@@ -56,20 +56,16 @@ class VolMuteAction(ActionBase):
             # Set icon
             if volume is None:
                 # Set icon to no sound available
-                log.debug("Volume is not available")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-sound-100.png")
             elif volume == 0:
                 # Set icon to muted
-                log.debug("Volume is muted")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-mute-100.png")
             elif volume > 0:
                 # Set icon to unmuted
-                log.debug("Volume is unmuted")
                 self.last_volume = volume
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-mute-100.png")
             else:
                 # Set icon to no sound available
-                log.debug("Volume is not available")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-sound-100.png")
 
         self.set_media(media_path=icon_path, size=0.75)
@@ -82,19 +78,15 @@ class VolMuteAction(ActionBase):
             # Get current volume
             current_vol = self.backend.get_volume(selected_device)
             if current_vol is None:
-                log.debug("Volume is not available.")
                 return None
             elif current_vol == 0:
                 # Set volume to 100
                 new_vol = self.last_volume
-                log.debug("Volume is muted. Set to " + str(new_vol))
             elif current_vol > 0:
                 # Set volume to 0
                 self.last_volume = current_vol
                 new_vol = 0
-                log.debug("Volume is unmuted. Set to 0")
             else:
-                log.debug("Volume is not available.")
                 return None
             self.backend.set_volume(new_vol, selected_device)
 
@@ -151,24 +143,20 @@ class VolMuteAction(ActionBase):
         """
         Update the device selector with the available devices
         """
-        log.debug("Updating device selector")
 
         # Clear the model and add the currently active device
         self.devices_model.append(["Currently Active", None])
         self.avail_devices = self.backend.get_devices()
         for device in self.avail_devices:
-            log.debug("Add Device: " + str(device))
             self.devices_model.append([device["name"], device["id"]])
 
         settings = self.get_settings()
 
         # Set index of combo box to last selected device
         # If the device is not in the list, set it to 0 and set settings to the first device
-        log.debug("Selected device in Settings: " + str(settings["device_name"]))
         if settings["device_name"] is not None:
             self.devices_select.combo_box.set_active(self.get_index_of_id(settings["device_id"]))
         else:
-            log.debug("Selected device not in list. Set to 0")
             self.devices_select.combo_box.set_active(0)
             settings["device_name"] = None
             settings["device_id"] = None
@@ -184,7 +172,6 @@ class VolMuteAction(ActionBase):
         settings["device_id"] = self.devices_model[combo_box.get_active()][1]
         self.set_settings(settings)
 
-        log.debug("Device selected: " + self.devices_model[combo_box.get_active()][0])
 
     def on_toggle_device_label(self, switch, *args):
         settings = self.get_settings()
@@ -211,18 +198,13 @@ class VolMuteAction(ActionBase):
         """
         position = 0
         if device_id is None:
-            log.debug("Device id is None => Device is the current active device")
             return 0
 
         if len(self.devices_model) == 0:
-            log.debug("Device model is empty, returning position 0")
             return 0
 
         for elem in self.devices_model:
-            log.debug("Checking device " + elem[0] + " with id " + device_id)
             if elem[1] == device_id:
-                log.debug("Found device " + elem[0] + " with id " + device_id)
                 return position
             position += 1
-        log.debug("Position of device " + elem[0] + " is " + str(position))
         return position

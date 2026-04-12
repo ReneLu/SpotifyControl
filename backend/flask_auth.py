@@ -53,10 +53,8 @@ class FlaskAuth(threading.Thread):
 def start_server(backend, port):
     global server
     # App routes defined here
-    log.debug("Setup Server on port: " + str(port))
     server = FlaskAuth(backend, port)
     server.token = None
-    log.debug("Starting Server...")
     server.start()
 
 def get_server_status():

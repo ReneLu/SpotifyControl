@@ -38,7 +38,6 @@ class PrevTrackAction(ActionBase):
 
     def on_tick(self) -> None:
         if not self.backend.is_authed():
-            #log.debug("Spotify is not authenticated")
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
             self.set_top_label(self.actionSettings.get_text(self.Texts.TOP))
@@ -50,11 +49,9 @@ class PrevTrackAction(ActionBase):
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
-        log.debug("Toggle Play / Pause mode")
         settings = self.actionSettings.get_settings()
         selected_device = settings["device_id"]
         if self.backend.is_authed():
-            log.debug("Playing previous song.")
             self.backend.previous_track(selected_device)
 
     def get_config_rows(self) -> list:

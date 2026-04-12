@@ -31,7 +31,6 @@ class VolUpAction(ActionBase):
 
     def on_tick(self) -> None:
         if not self.backend.is_authed():
-            #log.debug("Spotify is not authenticated")
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
             self.backend.set_action_active(True)
@@ -40,7 +39,6 @@ class VolUpAction(ActionBase):
             selected_device = settings["device_id"]
             if self.backend.get_volume(selected_device) is None:
                 # Set icon to no sound available
-                log.debug("Volume is not available")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-sound-100.png")
             else:
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-incr-vol-100.png")
@@ -66,10 +64,8 @@ class VolUpAction(ActionBase):
         settings = self.get_settings()
         selected_device = settings["device_id"]
         if self.backend.is_authed():
-            log.debug("Increase volume by " + str(settings["vol_chng"]))
             old_vol = self.backend.get_volume(selected_device)
             if old_vol is None:
-                log.debug("Volume is not available")
                 return
             new_vol = old_vol + settings["vol_chng"]
             if new_vol >= 100:
@@ -138,24 +134,20 @@ class VolUpAction(ActionBase):
         """
         Update the device selector with the available devices
         """
-        log.debug("Updating device selector")
 
         # Clear the model and add the currently active device
         self.devices_model.append(["Currently Active", None])
         self.avail_devices = self.backend.get_devices()
         for device in self.avail_devices:
-            log.debug("Add Device: " + str(device))
             self.devices_model.append([device["name"], device["id"]])
 
         settings = self.get_settings()
 
         # Set index of combo box to last selected device
         # If the device is not in the list, set it to 0 and set settings to the first device
-        log.debug("Selected device in Settings: " + str(settings["device_name"]))
         if settings["device_name"] is not None:
             self.devices_select.combo_box.set_active(self.get_index_of_id(settings["device_id"]))
         else:
-            log.debug("Selected device not in list. Set to 0")
             self.devices_select.combo_box.set_active(0)
             settings["device_name"] = None
             settings["device_id"] = None
@@ -171,7 +163,6 @@ class VolUpAction(ActionBase):
         settings["device_id"] = self.devices_model[combo_box.get_active()][1]
         self.set_settings(settings)
 
-        log.debug("Device selected: " + self.devices_model[combo_box.get_active()][0])
 
     def on_toggle_device_label(self, switch, *args):
         settings = self.get_settings()
@@ -187,7 +178,6 @@ class VolUpAction(ActionBase):
         settings = self.get_settings()
         settings["vol_chng"] = spin.get_value()
         self.set_settings(settings)
-        log.debug("Volume change set to " + str(settings["vol_chng"]))
 
     def get_device_id_from_name(self, name: str) -> str:
         """
@@ -204,18 +194,13 @@ class VolUpAction(ActionBase):
         """
         position = 0
         if device_id is None:
-            log.debug("Device id is None => Device is the current active device")
             return 0
 
         if len(self.devices_model) == 0:
-            log.debug("Device model is empty, returning position 0")
             return 0
 
         for elem in self.devices_model:
-            log.debug("Checking device " + elem[0] + " with id " + device_id)
             if elem[1] == device_id:
-                log.debug("Found device " + elem[0] + " with id " + device_id)
                 return position
             position += 1
-        log.debug("Position of device " + elem[0] + " is " + str(position))
         return position
