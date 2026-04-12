@@ -1,9 +1,5 @@
 # Import StreamController modules
-from GtkHelper.GtkHelper import ComboRow
 from src.backend.PluginManager.ActionBase import ActionBase
-from src.backend.DeckManagement.DeckController import DeckController
-from src.backend.PageManagement.Page import Page
-from src.backend.PluginManager.PluginBase import PluginBase
 
 # Import action_settings.py from the same folder
 from .action_settings import ActionSettings, Texts
@@ -15,7 +11,7 @@ import os
 import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Gtk, Adw
+from gi.repository import Gtk
 
 from loguru import logger as log
 
@@ -30,13 +26,15 @@ class PrevTrackAction(ActionBase):
         self.has_configuration = True
         self.actionSettings = ActionSettings(self.actionName, self.backend)
         self.Texts = Texts
-        self.actionSettings.set_settings_defaults()
 
     def on_ready(self) -> None:
         self.actionSettings.set_settings_defaults()
         self.on_tick()
 
     def on_tick(self) -> None:
+        if self.backend is None:
+            log.error("Spotify backend is not available")
+            return
         if not self.backend.is_authed():
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
         else:
@@ -44,13 +42,13 @@ class PrevTrackAction(ActionBase):
             self.set_center_label(self.actionSettings.get_text(self.Texts.MIDDLE))
             self.set_bottom_label(self.actionSettings.get_text(self.Texts.BOTTOM))
 
+            # Set icon
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-track-back-100.png")
         self.set_media(media_path=icon_path, size=0.75)
 
     def on_key_down(self) -> None:
-        # Toggle shuffle mode
         settings = self.actionSettings.get_settings()
-        selected_device = settings["device_id"]
+        selected_device = settings["device_id_" + self.actionName]
         if self.backend.is_authed():
             self.backend.previous_track(selected_device)
 
