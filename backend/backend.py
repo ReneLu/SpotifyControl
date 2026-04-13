@@ -358,6 +358,38 @@ class SpotifyControlBackend(BackendBase):
         else:
             return None
 
+    def get_duration_ms(self) -> int:
+        """
+        Get the duration of the current track in milliseconds
+        """
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            return None
+        if 'item' in curPlayback and curPlayback['item'] is not None:
+            return curPlayback['item']['duration_ms']
+        else:
+            return None
+
+    def get_elapsed_ms(self) -> int:
+        """
+        Get the elapsed time of the current track in milliseconds
+        """
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            return None
+        return curPlayback['progress_ms']
+
+    def get_remaining_ms(self) -> int:
+        """
+        Get the remaining time of the current track in milliseconds
+        """
+        duration = self.get_duration_ms()
+        elapsed = self.get_elapsed_ms()
+        if duration is not None and elapsed is not None:
+            return max(0, duration - elapsed)
+        else:
+            return None
+
     def repeat(self, repeat: str, device_id) -> None:
         """
         Set the repeat mode

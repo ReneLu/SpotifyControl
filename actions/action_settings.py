@@ -23,6 +23,9 @@ class TextOptions(Enum):
     ALBUM_NAME = "album_name"
     DEVICE_NAME = "device_name"
     VOLUME = "volume"
+    DURATION = "duration"
+    ELA_TIME = "elapsed_time"
+    REM_TIME = "remaining_time"
 
 class Texts(Enum):
     TOP = "top"
@@ -40,7 +43,10 @@ class ActionSettings(ActionBase):
         TextOptions.ARTIST_NAME: "",
         TextOptions.ALBUM_NAME: "",
         TextOptions.DEVICE_NAME: "",
-        TextOptions.VOLUME: ""
+        TextOptions.VOLUME: "",
+        TextOptions.DURATION: "",
+        TextOptions.ELA_TIME: "",
+        TextOptions.REM_TIME: ""
     }
 
     top_text_setting = ""
@@ -61,7 +67,10 @@ class ActionSettings(ActionBase):
             TextOptions.ARTIST_NAME: "Artist Name",
             TextOptions.ALBUM_NAME: "Album Name",
             TextOptions.DEVICE_NAME: "Device Name",
-            TextOptions.VOLUME: "Volume"
+            TextOptions.VOLUME: "Volume",
+            TextOptions.DURATION: "Duration",
+            TextOptions.ELA_TIME: "Elapsed Time",
+            TextOptions.REM_TIME: "Remaining Time"
         }
 
         self.top_text_setting = self.text_settings[TextOptions.NONE]
@@ -412,7 +421,58 @@ class ActionSettings(ActionBase):
                 return str(volume) + "%"
             else:
                 return ""
+        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.DURATION.value:
+            duration = self.backend.get_duration_ms()
+            if duration is not None:
+                hours = self.get_hour_from_ms(duration)
+                minutes = self.get_minute_from_ms(duration)
+                seconds = self.get_second_from_ms(duration)
+                if hours > 0:
+                    return f"{hours:02}:{minutes:02}:{seconds:02}"
+                elif minutes > 0:
+                    return f"{minutes:02}:{seconds:02}"
+                else:
+                    return f"00:{seconds:02}"
+            else:
+                return ""
+        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.ELA_TIME.value:
+            elapsed = self.backend.get_elapsed_ms()
+            duration = self.backend.get_duration_ms()
+            if elapsed is not None and duration is not None:
+                hours_duration = self.get_hour_from_ms(duration)
+                hours = self.get_hour_from_ms(elapsed)
+                minutes = self.get_minute_from_ms(elapsed)
+                seconds = self.get_second_from_ms(elapsed)
+                if hours_duration > 0:
+                    return f"{hours:02}:{minutes:02}:{seconds:02}"
+                else:
+                    return f"{minutes:02}:{seconds:02}"
+            else:
+                return ""
+        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.REM_TIME.value:
+            remaining = self.backend.get_remaining_ms()
+            duration = self.backend.get_duration_ms()
+            if remaining is not None and duration is not None:
+                hours_duration = self.get_hour_from_ms(duration)
+                hours = self.get_hour_from_ms(remaining)
+                minutes = self.get_minute_from_ms(remaining)
+                seconds = self.get_second_from_ms(remaining)
+                if hours_duration > 0:
+                    return f"{hours:02}:{minutes:02}:{seconds:02}"
+                else:
+                    return f"{minutes:02}:{seconds:02}"
+            else:
+                return ""
 
         log.error("Text option " + text_type.value + "_text_" + self.actionName + " is unknown, returning empty string")
         log.error("Setting: " + str(settings[text_type.value + "_text_" + self.actionName]))
         return ""
+
+    def get_hour_from_ms(self, ms: int) -> int:
+        return int(ms / (1000 * 60 * 60))
+
+    def get_minute_from_ms(self, ms: int) -> int:
+        return int((ms % (1000 * 60 * 60)) / (1000 * 60))
+
+    def get_second_from_ms(self, ms: int) -> int:
+        return int((ms % (1000 * 60)) / 1000)
