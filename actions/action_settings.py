@@ -390,7 +390,9 @@ class ActionSettings(ActionBase):
             log.error("Settings is None, returning empty string")
             return ""
 
-        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.NONE.value:
+        if settings[text_type.value + "_text_" + self.actionName] == TextOptions.NONE.value or \
+           settings[text_type.value + "_text_" + self.actionName] == "" or \
+           settings[text_type.value + "_text_" + self.actionName] == "None":
             return ""
         if settings[text_type.value + "_text_" + self.actionName] == TextOptions.DEVICE_NAME.value:
             return self.backend.get_active_device_name()
