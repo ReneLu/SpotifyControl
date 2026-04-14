@@ -6,10 +6,14 @@ import webbrowser
 from loguru import logger as log
 import flask_auth as flaskApp
 import threading, time
+from PIL import Image
+import requests
+from io import BytesIO
 
 CACHE_PATH = os.path.join(os.path.dirname(__file__), ".cache")
 KEY_CLIENT_ID = "client_id"
 KEY_PORT_REDIRECT_URI = "port_redirect_uri"
+ALBUMCOVER_PATH = os.path.join(os.path.dirname(__file__), "cache", "album_covers")
 
 class SpotifyControlBackend(BackendBase):
 
@@ -56,6 +60,8 @@ class SpotifyControlBackend(BackendBase):
 
         if not self.reauthenticate(str(self.client_id), self.port):
             log.error("Failed to authenticate with cached credentials")
+
+        os.makedirs(ALBUMCOVER_PATH, exist_ok=True)
 
         self.ticked_api_call_thread = threading.Thread(target=self.ticked_api_call)
         self.ticked_api_call_thread.daemon = True
@@ -438,5 +444,67 @@ class SpotifyControlBackend(BackendBase):
             return track_info
         else:
             return None
+
+    def get_album_cover_path(self) -> str:
+        """
+        Get the album cover of the current track as a PIL Image
+        """
+        info = self.get_album_cover_info()
+        if info and "url" in info and "id" in info:
+            album_cover_path = os.path.join(ALBUMCOVER_PATH, info["id"] + ".png")
+            # Use cached album cover if it exists
+            if os.path.exists(album_cover_path):
+                return album_cover_path
+            
+            # Delete old album covers if there are more than 5 in the cache
+            album_covers = sorted(os.listdir(ALBUMCOVER_PATH), key=lambda x: os.path.getmtime(os.path.join(ALBUMCOVER_PATH, x)))
+            if len(album_covers) > 5:
+                for album_cover in album_covers[:-5]:
+                    try:
+                        os.remove(os.path.join(ALBUMCOVER_PATH, album_cover))
+                    except Exception as e:
+                        log.error("Failed to delete old album cover: " + str(e))
+
+            # Download and save the album cover from URL
+            if not self.save_image_from_url(info["url"], album_cover_path):
+                log.error("Failed to save album cover from URL")
+                return ""
+            return album_cover_path
+
+        return ""
+
+    def get_album_cover_info(self) -> dict:
+        """
+        Get the album cover URL of the current track
+        """
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            return None
+
+        if 'item' in curPlayback and curPlayback['item'] is not None:
+            if 'album' in curPlayback['item'] and 'images' in curPlayback['item']['album'] and len(curPlayback['item']['album']['images']) > 0:
+                url = curPlayback['item']['album']['images'][0]['url']
+                id = curPlayback['item']['album']['id']
+                return { "url": str(url), "id": str(id) }
+        return None
+    
+    def save_image_from_url(self, url: str = "", save_path: str = "") -> bool:
+        """
+        Get an image from a URL
+        """
+        if url == "" or not url or save_path == "" or not save_path:
+            return False
+
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            f = open(save_path,'wb')
+            f.write(response.content)
+            f.close()
+            return True
+        except requests.exceptions.RequestException as e:
+            log.error("Failed to get image from URL: " + str(e))
+            return False
+
 
 backend = SpotifyControlBackend()
