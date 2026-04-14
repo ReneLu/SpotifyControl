@@ -7,12 +7,13 @@ from src.backend.PluginManager.ActionBase import ActionBase
 import os
 from enum import Enum
 import json
+from PIL import Image
 
 # Import gtk modules - used for the config rows
 import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Gtk
+from gi.repository import Gtk, Adw
 
 from loguru import logger as log
 
@@ -49,10 +50,6 @@ class ActionSettings(ActionBase):
         TextOptions.REM_TIME: ""
     }
 
-    top_text_setting = ""
-    middle_text_setting = ""
-    bottom_text_setting = ""
-
     backend = None
 
     settings_path: str = ""
@@ -72,10 +69,6 @@ class ActionSettings(ActionBase):
             TextOptions.ELA_TIME: "Elapsed Time",
             TextOptions.REM_TIME: "Remaining Time"
         }
-
-        self.top_text_setting = self.text_settings[TextOptions.NONE]
-        self.middle_text_setting = self.text_settings[TextOptions.NONE]
-        self.bottom_text_setting = self.text_settings[TextOptions.NONE]
 
         self.settings_path = os.path.join(DATA_PATH, "settings", "plugins", "com_ReneLu_spotifyControl", "actionSettings.json")
 
@@ -190,11 +183,23 @@ class ActionSettings(ActionBase):
         self.Bottom_Text_select.combo_box.connect("changed", self.on_bottom_text_select)
         rows.append(self.Bottom_Text_select)
 
+        # Create Album Cover Toggle
+        self.album_cover_toggle = Adw.SwitchRow(title="Show Album Cover")
+        self.album_cover_toggle.connect("notify::active", self.on_toggle_album_cover)
+        rows.append(self.album_cover_toggle)
+
+        # Create Icon Toggle
+        self.icon_toggle = Adw.SwitchRow(title="Show Icon")
+        self.icon_toggle.connect("notify::active", self.on_toggle_icon)
+        rows.append(self.icon_toggle)
+
         self.set_settings_defaults()
         self.update_device_selector()
         self.update_top_text_selector()
         self.update_middle_text_selector()
         self.update_bottom_text_selector()
+        self.update_album_cover_toggle()
+        self.update_icon_toggle()
 
         return rows
 
@@ -221,6 +226,12 @@ class ActionSettings(ActionBase):
         # Set defaults for bottom text selection
         if "bottom_text_" + self.actionName not in settings:
             settings["bottom_text_" + self.actionName] = self.text_settings[TextOptions.NONE]
+
+        # Set defaults for album cover toggle
+        if "show_album_cover_" + self.actionName not in settings:
+            settings["show_album_cover_" + self.actionName] = False
+        if "show_icon_" + self.actionName not in settings:
+            settings["show_icon_" + self.actionName] = True
 
         self.set_settings(settings)
 
@@ -319,6 +330,34 @@ class ActionSettings(ActionBase):
         settings["bottom_text_" + self.actionName] = self.text_settings[TextOptions.NONE]
         self.set_settings(settings)
 
+    def update_album_cover_toggle(self):
+        """
+        Update the album cover toggle with the current setting
+        """
+
+        settings = self.get_settings()
+
+        if "show_album_cover_" + self.actionName in settings:
+            self.album_cover_toggle.set_active(settings["show_album_cover_" + self.actionName])
+        else:
+            self.album_cover_toggle.set_active(False)
+            settings["show_album_cover_" + self.actionName] = False
+            self.set_settings(settings)
+
+    def update_icon_toggle(self):
+        """
+        Update the icon toggle with the current setting
+        """
+
+        settings = self.get_settings()
+
+        if "show_icon_" + self.actionName in settings:
+            self.icon_toggle.set_active(settings["show_icon_" + self.actionName])
+        else:
+            self.icon_toggle.set_active(True)
+            settings["show_icon_" + self.actionName] = True
+            self.set_settings(settings)
+
     def on_device_select(self, combo_box, *args):
         """
         Called when the user selects a device from the combo box
@@ -355,6 +394,15 @@ class ActionSettings(ActionBase):
         settings["bottom_text_" + self.actionName] = self.Bottom_Text_model[combo_box.get_active()][1]
         self.set_settings(settings)
 
+    def on_toggle_album_cover(self, switch, *args):
+        settings = self.get_settings()
+        settings["show_album_cover_" + self.actionName] = switch.get_active()
+        self.set_settings(settings)
+
+    def on_toggle_icon(self, switch, *args):
+        settings = self.get_settings()
+        settings["show_icon_" + self.actionName] = switch.get_active()
+        self.set_settings(settings)
 
     def get_device_id_from_name(self, name: str) -> str:
         """
@@ -478,3 +526,39 @@ class ActionSettings(ActionBase):
 
     def get_second_from_ms(self, ms: int) -> int:
         return int((ms % (1000 * 60)) / 1000)
+
+    def get_media(self, icon_path: str = "", icon_scale: float = 0.75) -> Image.Image:
+        settings = self.get_settings()
+        if settings["show_album_cover_" + self.actionName] == True:     # Album Cover should be shown
+            album_cover_path = self.backend.get_album_cover_path()      # Get Album Cover Path
+            if album_cover_path == "":                                  # Check if Album Cover Path is valid
+                return None
+            album_cover_image = Image.open(album_cover_path)            # Open Album Cover as PIL Image
+            if album_cover_image is None:                               # Check if Album Cover was opened successfully
+                return None
+            if icon_path == "" or settings["show_icon_" + self.actionName] == False:    # If no Icon should be shown, return Album Cover
+                return album_cover_image
+            icon = Image.open(icon_path)                                # Open Icon as PIL Image
+            icon = icon.resize((int(icon.width * icon_scale), int(icon.height * icon_scale)))
+            if icon is not None:                                        # Check if Icon was opened successfully  
+                return self.apply_background(background=album_cover_image, icon=icon) # Apply Icon to Album Cover
+        elif settings["show_icon_" + self.actionName] == True:          # Only Icon should be shown
+            icon = Image.open(icon_path)                                # Open Icon as PIL Image
+            icon = icon.resize((int(icon.width * icon_scale), int(icon.height * icon_scale)))
+            return icon
+
+        return None
+
+    def apply_background(self, icon:Image.Image = None, background:Image.Image = None, valign: float = 0, halign: float = 0) -> Image.Image:
+
+        if background is None or icon is None:
+            return None
+
+        background = background.resize((icon.width, icon.height))
+
+        left_margin = int((background.width - icon.width) * (halign + 1) / 2)
+        top_margin = int((background.height - icon.height) * (valign + 1) / 2)
+
+        background.paste(icon, (left_margin, top_margin), icon)
+
+        return background
