@@ -3,6 +3,7 @@ import os
 # Import StreamController modules
 from src.backend.PluginManager.PluginBase import PluginBase
 from src.backend.PluginManager.ActionHolder import ActionHolder
+from loguru import logger as log
 
 # Import actions
 from .actions.shuffle import ShuffleAction

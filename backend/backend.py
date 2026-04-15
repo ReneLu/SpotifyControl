@@ -6,10 +6,12 @@ import webbrowser
 from loguru import logger as log
 import flask_auth as flaskApp
 import threading, time
+import requests
 
 CACHE_PATH = os.path.join(os.path.dirname(__file__), ".cache")
 KEY_CLIENT_ID = "client_id"
 KEY_PORT_REDIRECT_URI = "port_redirect_uri"
+ALBUMCOVER_PATH = os.path.join(os.path.dirname(__file__), "cache", "album_covers")
 
 class SpotifyControlBackend(BackendBase):
 
@@ -42,14 +44,10 @@ class SpotifyControlBackend(BackendBase):
         except (TypeError, ValueError):
             self.port = 8080
 
-        log.debug("Initialize SpotifyControlBackend")
-        log.debug("Client ID: " + str(self.client_id))
-        log.debug("Port: " + str(self.port))
 
         self.cache_handler = spotipy.cache_handler.CacheFileHandler(CACHE_PATH)
         if os.path.isfile(CACHE_PATH) and self.client_id and self.port:
             self.redirect_uri = "http://127.0.0.1:" + str(self.port)
-            log.debug("Cache file found")
             self.auth_manager = spotipy.oauth2.SpotifyPKCE(scope=self.scope,
                                                     redirect_uri = self.redirect_uri,
                                                     client_id = self.client_id,
@@ -61,10 +59,11 @@ class SpotifyControlBackend(BackendBase):
         if not self.reauthenticate(str(self.client_id), self.port):
             log.error("Failed to authenticate with cached credentials")
 
+        os.makedirs(ALBUMCOVER_PATH, exist_ok=True)
+
         self.ticked_api_call_thread = threading.Thread(target=self.ticked_api_call)
         self.ticked_api_call_thread.daemon = True
         self.ticked_api_call_thread.start()
-        log.debug("Ticked API call thread started")
 
     ### Setters and Getters ###
     def get_setting(self, key: str, default = None):
@@ -139,9 +138,7 @@ class SpotifyControlBackend(BackendBase):
         """
         Reauthenticate the user
         """
-        log.debug("Reauthenticating user with client ID: " + str(client_id) + " and port: " + str(port))
         if None in (client_id, port) or "" in (client_id, port):
-            log.debug("Client ID or port is None or empty")
             return False
 
         self.client_id = client_id
@@ -149,7 +146,6 @@ class SpotifyControlBackend(BackendBase):
         self.redirect_uri = "http://127.0.0.1:" + str(self.port)
 
         if not os.path.isfile(CACHE_PATH):
-            log.debug("Cache file not found")
             return False
 
         self.cache_handler = spotipy.cache_handler.CacheFileHandler(CACHE_PATH)
@@ -160,7 +156,6 @@ class SpotifyControlBackend(BackendBase):
                                                 open_browser=True)
 
         if not self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
-            log.debug("Token is not valid")
             return False
 
         try:
@@ -180,7 +175,6 @@ class SpotifyControlBackend(BackendBase):
         self.ticked_api_call_thread_started = True
         while True:
 
-            log.debug("Ticked API call")
             while time.time() - self.last_active_api_call > 5:
                 # Wait for action on ticked API call
                 self.current_playback_response = None
@@ -189,9 +183,7 @@ class SpotifyControlBackend(BackendBase):
             if self.is_authed():
                 try:
                     self.current_playback_response = self.spotifyObject.current_playback()
-                    log.debug("Current playback: " + str(self.current_playback_response))
                     self.deviceList= self.spotifyObject.devices()
-                    log.debug("Devices: " + str(self.deviceList))
                 except spotipy.exceptions.SpotifyException as e:
                     log.error("Error updating spotify data: " + str(e))
                     if e.http_status == 401 or e.http_status == 403:
@@ -216,7 +208,6 @@ class SpotifyControlBackend(BackendBase):
         """
         Set the action active
         """
-        log.debug("Set action active: " + str(active))
         self.last_active_api_call = time.time()
 
     ### Player Control ###
@@ -225,18 +216,14 @@ class SpotifyControlBackend(BackendBase):
         Get the list of devices
         """
         if not self.is_authed():
-            log.debug("Spotify is not authenticated")
             return None
 
         if self.deviceList is None:
-            log.debug("No devices found")
             return None
 
         if 'devices' in self.deviceList:
-            log.debug("Devices found: " + str(len(self.deviceList['devices'])))
             return self.deviceList['devices']
         else:
-            log.debug("No devices found")
             return None
 
     def get_active_device_id(self):
@@ -244,12 +231,10 @@ class SpotifyControlBackend(BackendBase):
         Get the active device ID
         """
         if self.deviceList is None:
-            log.debug("No devices found")
             return None
 
         for device in self.deviceList['devices']:
             if device['is_active']:
-                log.debug("Active Device id: " + str(device['id']))
                 return device['id']
         return None
 
@@ -258,12 +243,10 @@ class SpotifyControlBackend(BackendBase):
         Get the active device ID
         """
         if self.deviceList is None:
-            log.debug("No devices found")
             return None
 
         for device in self.deviceList['devices']:
             if device['is_active']:
-                log.debug("Active Device name: " + str(device['name']))
                 return device['name']
         return None
 
@@ -272,12 +255,9 @@ class SpotifyControlBackend(BackendBase):
         Check if the user is authenticated
         """
         if os.path.isfile(CACHE_PATH):
-            log.debug("Cache file found")
             if self.auth_manager:
                 if self.auth_manager.validate_token(self.auth_manager.get_cached_token()):
-                    log.debug("Token is valid")
                     if flaskApp.get_server_status():
-                        log.debug("Flask server is running")
                         flaskApp.stop_server()
                     return True
         return False
@@ -287,12 +267,11 @@ class SpotifyControlBackend(BackendBase):
         Get the current shuffle mode
         """
         if not self.get_active_device_id():
-            return None
+            return False
 
         curPlayback = self.current_playback_response
         if curPlayback is None:
-            log.debug("No current playback")
-            return None
+            return False
         return curPlayback['shuffle_state']
 
     def shuffle(self, shuffle: bool, device_id=None) -> None:
@@ -315,7 +294,6 @@ class SpotifyControlBackend(BackendBase):
 
         curPlayback = self.current_playback_response
         if curPlayback is None:
-            log.debug("No current playback")
             return None
 
         return curPlayback['is_playing']
@@ -329,7 +307,6 @@ class SpotifyControlBackend(BackendBase):
 
         if device_id is None:   # No active Device found
             return
-        log.debug("Pause on device: " + str(device_id))
         self.spotifyObject.pause_playback(device_id=device_id)
 
     def play(self, device_id) -> None:
@@ -341,7 +318,6 @@ class SpotifyControlBackend(BackendBase):
 
         if device_id is None:   # No active Device found
             return
-        log.debug("Play on device: " + str(device_id))
         self.spotifyObject.start_playback(device_id=device_id)
 
     def next_track(self, device_id) -> None:
@@ -353,7 +329,6 @@ class SpotifyControlBackend(BackendBase):
 
         if device_id is None:   # No active Device found
             return
-        log.debug("Next track on device: " + str(device_id))
         self.spotifyObject.next_track(device_id=device_id)
 
     def previous_track(self, device_id) -> None:
@@ -365,7 +340,6 @@ class SpotifyControlBackend(BackendBase):
 
         if device_id is None:   # No active Device found
             return
-        log.debug("Previous track on device: " + str(device_id))
         self.spotifyObject.previous_track(device_id=device_id)
 
     def set_volume(self, volume: int, device_id) -> None:
@@ -374,22 +348,50 @@ class SpotifyControlBackend(BackendBase):
         """
         if device_id is None:
             device_id = self.get_active_device_id()
-        log.debug("Set volume on device: " + str(device_id) + " to " + str(volume))
         self.spotifyObject.volume(int(volume), device_id=device_id)
 
-    def get_volume(self, device_id) -> int:
+    def get_volume(self) -> int:
         """
         Get the current volume
         """
         curPlayback = self.current_playback_response
         if curPlayback is None:
-            log.debug("No current playback")
             return None
         if curPlayback['device']['supports_volume']:
             return curPlayback['device']['volume_percent']
         else:
-            log.debug("Device " + str(curPlayback['name']) +
-                    " does not support volume control")
+            return None
+
+    def get_duration_ms(self) -> int:
+        """
+        Get the duration of the current track in milliseconds
+        """
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            return None
+        if 'item' in curPlayback and curPlayback['item'] is not None:
+            return curPlayback['item']['duration_ms']
+        else:
+            return None
+
+    def get_elapsed_ms(self) -> int:
+        """
+        Get the elapsed time of the current track in milliseconds
+        """
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            return None
+        return curPlayback['progress_ms']
+
+    def get_remaining_ms(self) -> int:
+        """
+        Get the remaining time of the current track in milliseconds
+        """
+        duration = self.get_duration_ms()
+        elapsed = self.get_elapsed_ms()
+        if duration is not None and elapsed is not None:
+            return max(0, duration - elapsed)
+        else:
             return None
 
     def repeat(self, repeat: str, device_id) -> None:
@@ -406,7 +408,6 @@ class SpotifyControlBackend(BackendBase):
         if device_id is None:   # No active Device found
             return
 
-        log.debug("Set repeat on device: " + str(device_id) + " to " + str(repeat))
         self.spotifyObject.repeat(repeat, device_id)
 
     def get_current_repeat_state(self) -> str:
@@ -418,10 +419,90 @@ class SpotifyControlBackend(BackendBase):
 
         curPlayback = self.current_playback_response
         if curPlayback is None:
-            log.debug("No current playback")
             return None
 
         return curPlayback['repeat_state'] # context - Repeat playlist, track - Repeat track, off - Repeat off
 
+    def get_current_track_info(self) -> dict:
+        """
+        Get the current track info
+        """
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            return None
+
+        if 'item' in curPlayback and curPlayback['item'] is not None:
+            track_info = {
+                'name': curPlayback['item']['name'],
+                'artists': [artist['name'] for artist in curPlayback['item']['artists']],
+                'album': curPlayback['item']['album']['name'],
+                'duration_ms': curPlayback['item']['duration_ms'],
+                'progress_ms': curPlayback['progress_ms']
+            }
+            return track_info
+        else:
+            return None
+
+    def get_album_cover_path(self) -> str:
+        """
+        Get the album cover of the current track as a path in cache
+        """
+        info = self.get_album_cover_info()
+        if info and "url" in info and "id" in info:
+            album_cover_path = os.path.join(ALBUMCOVER_PATH, info["id"] + ".png")
+            # Use cached album cover if it exists
+            if os.path.exists(album_cover_path):
+                return album_cover_path
+
+            # Delete old album covers if there are more than 5 in the cache
+            album_covers = sorted(os.listdir(ALBUMCOVER_PATH), key=lambda x: os.path.getmtime(os.path.join(ALBUMCOVER_PATH, x)))
+            if len(album_covers) > 5:
+                for album_cover in album_covers[:-5]:
+                    try:
+                        os.remove(os.path.join(ALBUMCOVER_PATH, album_cover))
+                    except Exception as e:
+                        log.error("Failed to delete old album cover: " + str(e))
+
+            # Download and save the album cover from URL
+            if not self.save_image_from_url(info["url"], album_cover_path):
+                log.error("Failed to save album cover from URL")
+                return ""
+            return album_cover_path
+
+        return ""
+
+    def get_album_cover_info(self) -> dict:
+        """
+        Get the album cover URL of the current track
+        """
+        curPlayback = self.current_playback_response
+        if curPlayback is None:
+            return None
+
+        if 'item' in curPlayback and curPlayback['item'] is not None:
+            if 'album' in curPlayback['item'] and 'images' in curPlayback['item']['album'] and len(curPlayback['item']['album']['images']) > 0:
+                url = curPlayback['item']['album']['images'][0]['url']
+                id = curPlayback['item']['album']['id']
+                return { "url": str(url), "id": str(id) }
+        return None
+
+    def save_image_from_url(self, url: str = "", save_path: str = "") -> bool:
+        """
+        Get an image from a URL
+        """
+        if url == "" or not url or save_path == "" or not save_path:
+            return False
+
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            f = open(save_path,'wb')
+            f.write(response.content)
+            f.close()
+            return True
+        except requests.exceptions.RequestException as e:
+            log.error("Failed to get image from URL: " + str(e))
+            return False
+
+
 backend = SpotifyControlBackend()
-log.debug("SpotifyControlBackend initialized")
