@@ -6,9 +6,7 @@ import webbrowser
 from loguru import logger as log
 import flask_auth as flaskApp
 import threading, time
-from PIL import Image
 import requests
-from io import BytesIO
 
 CACHE_PATH = os.path.join(os.path.dirname(__file__), ".cache")
 KEY_CLIENT_ID = "client_id"
@@ -447,7 +445,7 @@ class SpotifyControlBackend(BackendBase):
 
     def get_album_cover_path(self) -> str:
         """
-        Get the album cover of the current track as a PIL Image
+        Get the album cover of the current track as a path in cache
         """
         info = self.get_album_cover_info()
         if info and "url" in info and "id" in info:
@@ -455,7 +453,7 @@ class SpotifyControlBackend(BackendBase):
             # Use cached album cover if it exists
             if os.path.exists(album_cover_path):
                 return album_cover_path
-            
+
             # Delete old album covers if there are more than 5 in the cache
             album_covers = sorted(os.listdir(ALBUMCOVER_PATH), key=lambda x: os.path.getmtime(os.path.join(ALBUMCOVER_PATH, x)))
             if len(album_covers) > 5:
@@ -487,7 +485,7 @@ class SpotifyControlBackend(BackendBase):
                 id = curPlayback['item']['album']['id']
                 return { "url": str(url), "id": str(id) }
         return None
-    
+
     def save_image_from_url(self, url: str = "", save_path: str = "") -> bool:
         """
         Get an image from a URL
