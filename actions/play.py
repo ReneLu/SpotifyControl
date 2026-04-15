@@ -54,7 +54,7 @@ class PlayAction(ActionBase):
                 self.set_media(None)
 
     def on_key_down(self) -> None:
-        # Toggle shuffle mode
+        # Start playback on the selected device when nothing is currently playing
         settings = self.actionSettings.get_settings()
         selected_device = settings["device_id_" + self.actionName]
         if self.backend.is_authed():
