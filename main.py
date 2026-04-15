@@ -16,6 +16,7 @@ from .actions.vol_mute import VolMuteAction
 from .actions.repeat import RepeatAction
 from .actions.vol_set import VolSetAction
 from .actions.play import PlayAction
+from .actions.pause import PauseAction
 
 from .settings import PluginSettings
 
@@ -113,6 +114,14 @@ class SpotifyControl(PluginBase):
             action_name = "Play",
         )
         self.add_action_holder(self.play_action_holder)
+
+        self.pause_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = PauseAction,
+            action_id = "dev_ReneLu_SpotifyControl::PauseAction",
+            action_name = "Pause",
+        )
+        self.add_action_holder(self.pause_action_holder)
 
         # Register plugin
         self.register(
