@@ -87,7 +87,7 @@ class ActionSettings(ActionBase):
             if settings.get("file-version") == "2.0":
                 # Is newest version, return settings
                 return settings.get("settings", {})
-            
+
             else:
                 # Is the old format, convert it
                 new_settings = {
@@ -98,7 +98,7 @@ class ActionSettings(ActionBase):
                     json.dump(new_settings, f, indent=4)
 
                 return settings
-                
+
     def set_settings(self, settings):
         """
         Saves the provided settings to the settings file.
@@ -540,9 +540,9 @@ class ActionSettings(ActionBase):
                 return album_cover_image
             icon = Image.open(icon_path)                                # Open Icon as PIL Image
             icon = icon.resize((int(icon.width * icon_scale), int(icon.height * icon_scale)))
-            if icon is not None:                                        # Check if Icon was opened successfully  
+            if icon is not None:                                        # Check if Icon was opened successfully
                 return self.apply_background(background=album_cover_image, icon=icon) # Apply Icon to Album Cover
-        elif settings["show_icon_" + self.actionName] == True:          # Only Icon should be shown
+        elif settings["show_icon_" + self.actionName] == True and icon_path != "":          # Only Icon should be shown
             icon = Image.open(icon_path)                                # Open Icon as PIL Image
             icon = icon.resize((int(icon.width * icon_scale), int(icon.height * icon_scale)))
             return icon
