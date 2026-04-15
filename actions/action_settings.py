@@ -203,6 +203,15 @@ class ActionSettings(ActionBase):
 
         return rows
 
+    def get_show_icon_element(self):
+        """
+        Get the show icon toggle element for the config menu
+
+        Returns:
+            Adw.SwitchRow: The show icon toggle element
+        """
+        return self.icon_toggle
+
     def set_settings_defaults(self):
         """
         Set the default settings for the action
