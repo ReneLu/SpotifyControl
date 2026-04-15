@@ -42,7 +42,7 @@ class PlayAction(ActionBase):
             self.set_center_label(self.actionSettings.get_text(self.Texts.MIDDLE))
             self.set_bottom_label(self.actionSettings.get_text(self.Texts.BOTTOM))
 
-            # Set the icon and background based on the current playback state and the settings
+            # Set the play icon when the action settings enable showing an icon
             icon_path = ""
             if self.actionSettings.get_settings()["show_icon_" + self.actionName] == True:
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-play-100.png")
