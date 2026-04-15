@@ -34,19 +34,26 @@ class VolDwnAction(ActionBase):
     def on_tick(self) -> None:
         if not self.backend.is_authed():
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
+            self.set_media(media_path=icon_path, size=0.75)
         else:
             # Set Labels
             self.set_top_label(self.actionSettings.get_text(self.Texts.TOP))
             self.set_center_label(self.actionSettings.get_text(self.Texts.MIDDLE))
             self.set_bottom_label(self.actionSettings.get_text(self.Texts.BOTTOM))
 
+            icon_path = ""
             volume = self.backend.get_volume()
             if volume is None:
                 # Set icon to no sound available
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-sound-100.png")
             else:
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-decr-vol-100.png")
-        self.set_media(media_path=icon_path, size=0.75)
+
+            btn_img = self.actionSettings.get_media(icon_path=icon_path)
+            if btn_img is not None:
+                self.set_media(image=btn_img)
+            else:
+                self.set_media(None)
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
