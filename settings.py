@@ -20,16 +20,12 @@ class PluginSettings:
 
     def __init__(self, plugin_base: PluginBase):
         self._plugin_base = plugin_base
-        log.debug("Initialize Settings")
         settings = self._plugin_base.get_settings()
         client_id = settings.get(KEY_CLIENT_ID, "")
         port = settings.get(KEY_PORT_REDIRECT_URI, "")
 
-        self._plugin_base.backend.reauthenticate(client_id, port)
-
     def get_settings_area(self) -> Adw.PreferencesGroup:
 
-        log.debug("Creating settings area")
 
         self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
                 "actions.base.credentials.failed"), css_classes=["spotify-controller-red"])
@@ -66,12 +62,17 @@ class PluginSettings:
         self._load_settings()
         self._enable_auth()
 
-        if not self._plugin_base.backend.is_authed():
+        try:
+            if not self._plugin_base.backend.is_authed():
+                self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
+                    "actions.base.credentials.failed"), css_classes=["spotify-controller-red"])
+            else:
+                self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
+                    "actions.base.credentials.authenticated"), css_classes=["spotify-controller-green"])
+        except Exception as e:
+            log.error(f"Error checking authentication status: {e}")
             self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
                 "actions.base.credentials.failed"), css_classes=["spotify-controller-red"])
-        else:
-            self._status_label = Gtk.Label(label=self._plugin_base.lm.get(
-                "actions.base.credentials.authenticated"), css_classes=["spotify-controller-green"])
 
         pref_group = Adw.PreferencesGroup()
         pref_group.set_title(self._plugin_base.lm.get(

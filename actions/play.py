@@ -14,9 +14,9 @@ from gi.repository import Gtk
 
 from loguru import logger as log
 
-class ShuffleAction(ActionBase):
+class PlayAction(ActionBase):
 
-    actionName = "shuffle"
+    actionName = "play"
     backend = None
 
     def __init__(self, *args, **kwargs):
@@ -33,9 +33,6 @@ class ShuffleAction(ActionBase):
         self.actionSettings.set_settings_defaults()
         self.on_tick()
 
-    def on_ready(self) -> None:
-        self.on_tick()
-
     def on_tick(self) -> None:
         if self.backend is None:
             log.error("Spotify backend is not available")
@@ -48,14 +45,10 @@ class ShuffleAction(ActionBase):
             self.set_center_label(self.actionSettings.get_text(self.Texts.MIDDLE))
             self.set_bottom_label(self.actionSettings.get_text(self.Texts.BOTTOM))
 
+            # Set the play icon when the action settings enable showing an icon
             icon_path = ""
-            shuffle_mode = self.backend.get_shuffle_mode()
-            if shuffle_mode == True:
-                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-100.png")
-            elif shuffle_mode == False:
-                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-off-100.png")
-            else:
-                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-no-music-100.png")
+            if self.actionSettings.get_settings()["show_icon_" + self.actionName] == True:
+                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-play-100.png")
 
             btn_img = self.actionSettings.get_media(self.deck_controller.deck.key_image_format()["size"], icon_path=icon_path)
             if btn_img is not None:
@@ -64,13 +57,12 @@ class ShuffleAction(ActionBase):
                 self.set_media(None)
 
     def on_key_down(self) -> None:
-        # Toggle shuffle mode
+        # Start playback on the selected device when nothing is currently playing
+        settings = self.actionSettings.get_settings()
+        selected_device = settings["device_id_" + self.actionName]
         if self.backend.is_authed():
-            shuffle_mode = self.backend.get_shuffle_mode()
-            if shuffle_mode == True:
-                self.backend.shuffle(False)
-            else:
-                self.backend.shuffle(True)
+            if self.backend.get_playback_state() == False:
+                self.backend.play(selected_device)
 
     def get_config_rows(self) -> list:
         if self.backend.is_authed():

@@ -1,9 +1,8 @@
 # Import StreamController modules
-from GtkHelper.GtkHelper import ComboRow
 from src.backend.PluginManager.ActionBase import ActionBase
-from src.backend.DeckManagement.DeckController import DeckController
-from src.backend.PageManagement.Page import Page
-from src.backend.PluginManager.PluginBase import PluginBase
+
+# Import action_settings.py from the same folder
+from .action_settings import ActionSettings, Texts
 
 # Import python modules
 import os
@@ -18,6 +17,8 @@ from loguru import logger as log
 
 class VolSetAction(ActionBase):
 
+    actionNameStart = "vol_set"
+    actionName = actionNameStart
     backend = None
     last_volume = 0
 
@@ -25,72 +26,51 @@ class VolSetAction(ActionBase):
         super().__init__(*args, **kwargs)
         self.backend = self.plugin_base.backend
         self.has_configuration = True
+        self.actionName = self.actionName + "_" + str(self.input_ident.json_identifier) + "_" + self.page.get_name().replace(" ", "_")
+        self.actionSettings = ActionSettings(self.actionName, self.backend)
+        self.Texts = Texts
+
+        self.has_configuration = True
 
     def on_ready(self) -> None:
-        self.set_settings_defaults()
+        self.actionSettings.set_settings_defaults()
         self.on_tick()
 
     def on_tick(self) -> None:
         if not self.backend.is_authed():
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-spotify-no-auth-100.png")
+            self.set_media(media_path=icon_path, size=0.75)
         else:
-            self.backend.set_action_active(True)
-            settings = self.get_settings()
-            device_id = settings["device_id"]
-            volume = self.backend.get_volume(device_id)
-
             # Set Labels
-            if settings["show_set_vol_label"] == True:
-                self.set_center_label(str(int(settings["volume"])))
-            else:
-                self.set_center_label("")
+            self.set_top_label(self.actionSettings.get_text(self.Texts.TOP))
+            self.set_center_label(self.actionSettings.get_text(self.Texts.MIDDLE))
+            self.set_bottom_label(self.actionSettings.get_text(self.Texts.BOTTOM))
 
-            if settings["show_device_label"] == True:
-                if settings["device_id"] is None:
-                    name = self.backend.get_active_device_name()
-                else:
-                    name = settings["device_name"]
-                self.set_bottom_label(str(name))
-            else:
-                self.set_bottom_label("")
-
-
+            icon_path = ""
+            volume = self.backend.get_volume()
             if volume is None:
                 # Set icon to no sound available
-                log.debug("Volume is not available")
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-no-sound-100.png")
             else:
                 icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-sound-100.png")
-        self.set_media(media_path=icon_path, size=0.75)
+
+            btn_img = self.actionSettings.get_media(self.deck_controller.deck.key_image_format()["size"], icon_path=icon_path)
+            if btn_img is not None:
+                self.set_media(image=btn_img)
+            else:
+                self.set_media(None)
 
     def on_key_down(self) -> None:
         # Toggle shuffle mode
-        settings = self.get_settings()
-        selected_device = settings["device_id"]
+        settings = self.actionSettings.get_settings()
+        selected_device = settings["device_id_" + self.actionName]
         if self.backend.is_authed():
-            log.debug("Set Volume to " + str(settings["volume"]))
-            self.backend.set_volume(settings["volume"], selected_device)
+            self.backend.set_volume(int(settings["volume_" + self.actionName]), selected_device)
 
+    ### Action Specific Settings Setup ###
     def get_config_rows(self) -> list:
         if self.backend.is_authed():
-            # Create Device Selector Element
-            self.devices_model = Gtk.ListStore.new([str, str])
-            self.devices_select = ComboRow(model=self.devices_model,
-                                           title=self.plugin_base.lm.get("actions.base.device-select.label"))
-
-            self.device_selector_renderer = Gtk.CellRendererText()
-            self.devices_select.combo_box.pack_start(self.device_selector_renderer, True)
-            self.devices_select.combo_box.add_attribute(self.device_selector_renderer, "text", 0)
-
-            self.label_device_toggle = Adw.SwitchRow(title=self.plugin_base.lm.get("actions.base.show-name-switch.label"),
-                                              subtitle=self.plugin_base.lm.get("actions.base.show-name-switch.subtitle"))
-
-            self.label_vol_set_toggle = Adw.SwitchRow(title=self.plugin_base.lm.get("actions.vol-set.vol-show.label"),
-                                              subtitle=self.plugin_base.lm.get("actions.vol-set.vol-show.subtitle"))
-
-            self.devices_select.combo_box.connect("changed", self.on_device_select)
-            self.label_device_toggle.connect("notify::active", self.on_toggle_device_label)
-            self.label_vol_set_toggle.connect("notify::active", self.on_toggle_vol_set_label)
+            rows = self.actionSettings.get_config_rows()
 
             self.vol_val = Adw.SpinRow.new_with_range(0, 100, 1)
             self.vol_val.set_title(self.plugin_base.lm.get("actions.vol-set.vol-spin.label"))
@@ -99,117 +79,35 @@ class VolSetAction(ActionBase):
 
             self.set_settings_defaults()
 
-            self.label_device_toggle.set_active(self.get_settings().get("show_device_label", False))
-            self.label_vol_set_toggle.set_active(self.get_settings().get("show_set_vol_label", False))
-            self.vol_val.set_value(self.get_settings().get("volume", 50))
-            self.update_device_selector()
+            self.vol_val.set_value(self.actionSettings.get_settings().get("volume_" + self.actionName, 50))
 
-            return [self.devices_select, self.vol_val, self.label_device_toggle, self.label_vol_set_toggle]
+            rows.append(self.vol_val)
+
+            return rows
 
         else:
             self.not_authed_label = Gtk.Label(label=self.plugin_base.lm.get("actions.base.not-authed"))
             return [self.not_authed_label]
 
-    ### Custom Methods ###
     def set_settings_defaults(self):
         """
         Set the default settings for the action
         """
-        settings = self.get_settings()
-        if "device_name" not in settings:
-            settings["device_name"] = None
-        if "device_id" not in settings:
-            settings["device_id"] = None
-        if "show_device_label" not in settings:
-            settings["show_device_label"] = False
-        if "volume" not in settings:
-            settings["volume"] = 50
-        if "show_set_vol_label" not in settings:
-            settings["show_set_vol_label"] = False
-        self.set_settings(settings)
-
-    def update_device_selector(self):
-        """
-        Update the device selector with the available devices
-        """
-        log.debug("Updating device selector")
-
-        # Clear the model and add the currently active device
-        self.devices_model.append(["Currently Active", None])
-        self.avail_devices = self.backend.get_devices()
-        for device in self.avail_devices:
-            log.debug("Add Device: " + str(device))
-            self.devices_model.append([device["name"], device["id"]])
-
-        settings = self.get_settings()
-
-        # Set index of combo box to last selected device
-        # If the device is not in the list, set it to 0 and set settings to the first device
-        log.debug("Selected device in Settings: " + str(settings["device_name"]))
-        if settings["device_name"] is not None:
-            self.devices_select.combo_box.set_active(self.get_index_of_id(settings["device_id"]))
-        else:
-            log.debug("Selected device not in list. Set to 0")
-            self.devices_select.combo_box.set_active(0)
-            settings["device_name"] = None
-            settings["device_id"] = None
-
-        self.set_settings(settings)
-
-    def on_device_select(self, combo_box, *args):
-        """
-        Called when the user selects a device from the combo box
-        """
-        settings = self.get_settings()
-        settings["device_name"] = self.devices_model[combo_box.get_active()][0]
-        settings["device_id"] = self.devices_model[combo_box.get_active()][1]
-        self.set_settings(settings)
-
-        log.debug("Device selected: " + self.devices_model[combo_box.get_active()][0])
-
-    def on_toggle_device_label(self, switch, *args):
-        settings = self.get_settings()
-        settings["show_device_label"] = switch.get_active()
-        self.set_settings(settings)
-
-    def on_toggle_vol_set_label(self, switch, *args):
-        settings = self.get_settings()
-        settings["show_set_vol_label"] = switch.get_active()
-        self.set_settings(settings)
+        settings = self.actionSettings.get_settings()
+        if "volume_" + self.actionName not in settings:
+            settings["volume_" + self.actionName] = 50
+        self.actionSettings.set_settings(settings)
 
     def on_volume_change(self, spin, *args):
-        settings = self.get_settings()
-        settings["volume"] = spin.get_value()
-        self.set_settings(settings)
-        log.debug("Volume change set to " + str(settings["volume"]))
+        settings = self.actionSettings.get_settings()
+        settings["volume_" + self.actionName] = spin.get_value()
+        self.actionSettings.set_settings(settings)
 
-    def get_device_id_from_name(self, name: str) -> str:
-        """
-        Get the device id from the device name
-        """
-        for device in self.avail_devices:
-            if device["name"] == name:
-                return device["id"]
-        return None
+    def on_page_rename(self, old_name, new_name):
+        if old_name == self.page.get_name():
+            old_action_name = self.actionName
+            self.actionName = self.actionNameStart + "_" + str(self.input_ident.json_identifier) + "_" + new_name.replace(" ", "_")
+            self.actionSettings.rename_setting(old_action_name, self.actionName)
 
-    def get_index_of_id(self, device_id: str) -> int:
-        """
-        Get the index of the device id within the combo box
-        """
-        position = 0
-        if device_id is None:
-            log.debug("Device id is None => Device is the current active device")
-            return 0
-
-        if len(self.devices_model) == 0:
-            log.debug("Device model is empty, returning position 0")
-            return 0
-
-        for elem in self.devices_model:
-            log.debug("Checking device " + elem[0] + " with id " + device_id)
-            if elem[1] == device_id:
-                log.debug("Found device " + elem[0] + " with id " + device_id)
-                return position
-            position += 1
-        log.debug("Position of device " + elem[0] + " is " + str(position))
-        return position
+    def on_remove(self) -> None:
+        self.actionSettings.remove_setting(self.actionName)

@@ -14,16 +14,17 @@ from gi.repository import Gtk
 
 from loguru import logger as log
 
-class ShuffleAction(ActionBase):
+class InfoAction(ActionBase):
 
-    actionName = "shuffle"
+    actionNameStart = "info"
+    actionName = "info"
     backend = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.backend = self.plugin_base.backend
         self.has_configuration = True
-        self.actionName = self.actionName + "_" + str(self.input_ident.json_identifier) + "_" + self.page.get_name().replace(" ", "_")
+        self.actionName = self.actionNameStart + "_" + str(self.input_ident.json_identifier) + "_" + self.page.get_name().replace(" ", "_")
         self.actionSettings = ActionSettings(self.actionName, self.backend)
         self.Texts = Texts
 
@@ -31,9 +32,6 @@ class ShuffleAction(ActionBase):
 
     def on_ready(self) -> None:
         self.actionSettings.set_settings_defaults()
-        self.on_tick()
-
-    def on_ready(self) -> None:
         self.on_tick()
 
     def on_tick(self) -> None:
@@ -48,33 +46,20 @@ class ShuffleAction(ActionBase):
             self.set_center_label(self.actionSettings.get_text(self.Texts.MIDDLE))
             self.set_bottom_label(self.actionSettings.get_text(self.Texts.BOTTOM))
 
-            icon_path = ""
-            shuffle_mode = self.backend.get_shuffle_mode()
-            if shuffle_mode == True:
-                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-100.png")
-            elif shuffle_mode == False:
-                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-off-100.png")
-            else:
-                icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-shuffle-no-music-100.png")
-
-            btn_img = self.actionSettings.get_media(self.deck_controller.deck.key_image_format()["size"], icon_path=icon_path)
+            btn_img = self.actionSettings.get_media(self.deck_controller.deck.key_image_format()["size"])
             if btn_img is not None:
                 self.set_media(image=btn_img)
             else:
                 self.set_media(None)
 
     def on_key_down(self) -> None:
-        # Toggle shuffle mode
-        if self.backend.is_authed():
-            shuffle_mode = self.backend.get_shuffle_mode()
-            if shuffle_mode == True:
-                self.backend.shuffle(False)
-            else:
-                self.backend.shuffle(True)
+        pass
 
     def get_config_rows(self) -> list:
         if self.backend.is_authed():
-            return self.actionSettings.get_config_rows()
+            rows = self.actionSettings.get_config_rows()
+            rows.remove(self.actionSettings.get_show_icon_element()) # Remove the show icon row from the config, since it doesn't make sense for the info action
+            return rows
         else:
             self.not_authed_label = Gtk.Label(label=self.plugin_base.lm.get("actions.base.not-authed"))
             return [self.not_authed_label]
