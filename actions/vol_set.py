@@ -99,3 +99,12 @@ class VolSetAction(ActionBase):
         settings = self.actionSettings.get_settings()
         settings["volume_" + self.actionName] = spin.get_value()
         self.actionSettings.set_settings(settings)
+
+    def on_page_rename(self, old_name, new_name):
+        if old_name == self.page.get_name():
+            old_action_name = self.actionName
+            self.actionName = self.actionNameStart + "_" + str(self.input_ident.json_identifier) + "_" + new_name.replace(" ", "_")
+            self.actionSettings.rename_setting(old_action_name, self.actionName)
+
+    def on_remove(self) -> None:
+        self.actionSettings.remove_setting(self.actionName)
