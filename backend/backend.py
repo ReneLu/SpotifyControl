@@ -11,7 +11,8 @@ import requests
 CACHE_PATH = os.path.join(os.path.dirname(__file__), ".cache")
 KEY_CLIENT_ID = "client_id"
 KEY_PORT_REDIRECT_URI = "port_redirect_uri"
-ALBUMCOVER_PATH = os.path.join(os.path.dirname(__file__), "cache", "album_covers")
+PLAYING_COVER_PATH = os.path.join(os.path.dirname(__file__), "cache", "playing_covers")
+ELEMENT_COVER_PATH = os.path.join(os.path.dirname(__file__), "cache", "element_covers")
 
 class SpotifyControlBackend(BackendBase):
 
@@ -59,7 +60,8 @@ class SpotifyControlBackend(BackendBase):
         if not self.reauthenticate(str(self.client_id), self.port):
             log.error("Failed to authenticate with cached credentials")
 
-        os.makedirs(ALBUMCOVER_PATH, exist_ok=True)
+        os.makedirs(PLAYING_COVER_PATH, exist_ok=True)
+        os.makedirs(ELEMENT_COVER_PATH, exist_ok=True)
 
         self.ticked_api_call_thread = threading.Thread(target=self.ticked_api_call)
         self.ticked_api_call_thread.daemon = True
@@ -309,7 +311,7 @@ class SpotifyControlBackend(BackendBase):
             return
         self.spotifyObject.pause_playback(device_id=device_id)
 
-    def play(self, device_id) -> None:
+    def play(self, device_id, context_uri=None, track_uri=None) -> None:
         """
         Play the playback
         """
@@ -318,7 +320,19 @@ class SpotifyControlBackend(BackendBase):
 
         if device_id is None:   # No active Device found
             return
-        self.spotifyObject.start_playback(device_id=device_id)
+        self.spotifyObject.start_playback(device_id=device_id, context_uri=context_uri, uris=track_uri)
+
+    def get_uri_from_url(self, url: str) -> dict:
+        # Convert a Spotify URL to a Spotify URI
+        if url.startswith("https://open.spotify.com/"):
+            parts = url.split("/")
+            if len(parts) >= 5:
+                type = parts[3]
+                id = parts[4].split("?")[0]
+                return { "uri":f"spotify:{type}:{id}", "type": type, "id": id }
+        return {}
+
+
 
     def next_track(self, device_id) -> None:
         """
@@ -443,35 +457,35 @@ class SpotifyControlBackend(BackendBase):
         else:
             return None
 
-    def get_album_cover_path(self) -> str:
+    def get_current_playing_cover_path(self) -> str:
         """
         Get the album cover of the current track as a path in cache
         """
-        info = self.get_album_cover_info()
+        info = self.get_current_playing_cover_info()
         if info and "url" in info and "id" in info:
-            album_cover_path = os.path.join(ALBUMCOVER_PATH, info["id"] + ".png")
+            playing_cover_path = os.path.join(PLAYING_COVER_PATH, info["id"] + ".png")
             # Use cached album cover if it exists
-            if os.path.exists(album_cover_path):
-                return album_cover_path
+            if os.path.exists(playing_cover_path):
+                return playing_cover_path
 
             # Delete old album covers if there are more than 5 in the cache
-            album_covers = sorted(os.listdir(ALBUMCOVER_PATH), key=lambda x: os.path.getmtime(os.path.join(ALBUMCOVER_PATH, x)))
-            if len(album_covers) > 5:
-                for album_cover in album_covers[:-5]:
+            playing_covers = sorted(os.listdir(PLAYING_COVER_PATH), key=lambda x: os.path.getmtime(os.path.join(PLAYING_COVER_PATH, x)))
+            if len(playing_covers) > 5:
+                for playing_cover in playing_covers[:-5]:
                     try:
-                        os.remove(os.path.join(ALBUMCOVER_PATH, album_cover))
+                        os.remove(os.path.join(PLAYING_COVER_PATH, playing_cover))
                     except Exception as e:
-                        log.error("Failed to delete old album cover: " + str(e))
+                        log.error("Failed to delete old playing cover: " + str(e))
 
             # Download and save the album cover from URL
-            if not self.save_image_from_url(info["url"], album_cover_path):
-                log.error("Failed to save album cover from URL")
+            if not self.save_image_from_url(info["url"], playing_cover_path):
+                log.error("Failed to save playing cover from URL")
                 return ""
-            return album_cover_path
+            return playing_cover_path
 
         return ""
 
-    def get_album_cover_info(self) -> dict:
+    def get_current_playing_cover_info(self) -> dict:
         """
         Get the album cover URL of the current track
         """
@@ -485,6 +499,101 @@ class SpotifyControlBackend(BackendBase):
                 id = curPlayback['item']['album']['id']
                 return { "url": str(url), "id": str(id) }
         return None
+
+    def get_element_cover_path(self, element_id: str, element_type: str) -> str:
+        """
+        Get the album cover of the given album ID as a path in cache
+        """
+        if element_id:
+            element_cover_path = os.path.join(ELEMENT_COVER_PATH, element_id + ".png")
+            # Use cached album cover if it exists
+            if os.path.exists(element_cover_path):
+                return element_cover_path
+
+            # Try to download and save the album cover from URL
+            try:
+                if element_type == "album":
+                    info = self.spotifyObject.album(element_id)
+                    if 'images' in info and len(info['images']) > 0:
+                        url = info['images'][0]['url']
+                    else:
+                        log.error("No images found for album ID " + str(element_id))
+                        return ""
+                elif element_type == "playlist":
+                    info = self.spotifyObject.playlist_cover_image(element_id)
+                    if 'url' in info[0] and len(info[0]['url']) > 0:
+                        url = info[0]['url']
+                    else:
+                        log.error("No images found for playlist ID " + str(element_id))
+                        return ""
+                elif element_type == "artist":
+                    info = self.spotifyObject.artist(element_id)
+                    if 'images' in info and len(info['images']) > 0:
+                        url = info['images'][0]['url']
+                    else:
+                        log.error("No images found for artist ID " + str(element_id))
+                        return ""
+                else:
+                    log.error("Invalid element type: " + str(element_type))
+                    return ""
+
+                # Download and save the album cover from URL
+                if not self.save_image_from_url(url, element_cover_path):
+                    log.error("Failed to save Element cover from URL")
+                    return ""
+                return element_cover_path
+            except spotipy.exceptions.SpotifyException as e:
+                log.error("Failed to get Element info for element ID " + str(element_id) + ": " + str(e))
+                return ""
+
+        return ""
+
+    def remove_element_cover_from_cache(self, element_id: str):
+        """
+        Remove the album cover of the given album ID from cache
+        """
+        element_cover_path = os.path.join(ELEMENT_COVER_PATH, element_id + ".png")
+        if os.path.exists(element_cover_path):
+            try:
+                os.remove(element_cover_path)
+            except Exception as e:
+                log.error("Failed to delete element cover: " + str(e))
+
+    def get_element_name(self, element_id: str, element_type: str) -> str:
+        """
+        Get the name of the given element ID
+        """
+        if element_id:
+            try:
+                if element_type == "album":
+                    info = self.spotifyObject.album(element_id)
+                    if 'name' in info and info['name']:
+                        return info['name']
+                    else:
+                        log.error("No name found for album ID " + str(element_id))
+                        return ""
+                elif element_type == "playlist":
+                    info = self.spotifyObject.playlist(element_id)
+                    if 'name' in info and info['name']:
+                        return info['name']
+                    else:
+                        log.error("No name found for playlist ID " + str(element_id))
+                        return ""
+                elif element_type == "artist":
+                    info = self.spotifyObject.artist(element_id)
+                    if 'name' in info and info['name']:
+                        return info['name']
+                    else:
+                        log.error("No name found for artist ID " + str(element_id))
+                        return ""
+                else:
+                    log.error("Invalid element type: " + str(element_type))
+                    return ""
+            except spotipy.exceptions.SpotifyException as e:
+                log.error("Failed to get Element name for element ID " + str(element_id) + ": " + str(e))
+                return ""
+
+        return ""
 
     def save_image_from_url(self, url: str = "", save_path: str = "") -> bool:
         """

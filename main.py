@@ -18,6 +18,7 @@ from .actions.vol_set import VolSetAction
 from .actions.play import PlayAction
 from .actions.pause import PauseAction
 from .actions.info import InfoAction
+from .actions.element_play import ElementPlayAction
 
 from .settings import PluginSettings
 
@@ -131,6 +132,14 @@ class SpotifyControl(PluginBase):
             action_name = "Info",
         )
         self.add_action_holder(self.info_action_holder)
+
+        self.element_play_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = ElementPlayAction,
+            action_id = "dev_ReneLu_SpotifyControl::ElementPlayAction",
+            action_name = "Element Play",
+        )
+        self.add_action_holder(self.element_play_action_holder)
 
         # Register plugin
         self.register(
