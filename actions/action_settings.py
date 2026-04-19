@@ -39,7 +39,7 @@ DATA_PATH = os.path.join(VAR_APP_PATH, "data")
 class ActionSettings(ActionBase):
 
     text_settings = {
-        TextOptions.NONE: None,
+        TextOptions.NONE: "None",
         TextOptions.TRACK_NAME: "Track Name",
         TextOptions.ARTIST_NAME: "Artist Name",
         TextOptions.ALBUM_NAME: "Album Name",
