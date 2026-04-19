@@ -39,15 +39,15 @@ DATA_PATH = os.path.join(VAR_APP_PATH, "data")
 class ActionSettings(ActionBase):
 
     text_settings = {
-        TextOptions.NONE: "",
-        TextOptions.TRACK_NAME: "",
-        TextOptions.ARTIST_NAME: "",
-        TextOptions.ALBUM_NAME: "",
-        TextOptions.DEVICE_NAME: "",
-        TextOptions.VOLUME: "",
-        TextOptions.DURATION: "",
-        TextOptions.ELA_TIME: "",
-        TextOptions.REM_TIME: ""
+        TextOptions.NONE: None,
+        TextOptions.TRACK_NAME: "Track Name",
+        TextOptions.ARTIST_NAME: "Artist Name",
+        TextOptions.ALBUM_NAME: "Album Name",
+        TextOptions.DEVICE_NAME: "Device Name",
+        TextOptions.VOLUME: "Volume",
+        TextOptions.DURATION: "Duration",
+        TextOptions.ELA_TIME: "Elapsed Time",
+        TextOptions.REM_TIME: "Remaining Time"
     }
 
     backend = None
@@ -57,18 +57,6 @@ class ActionSettings(ActionBase):
     def __init__(self, actionName: str, backend: Any) -> None:
         self.actionName = actionName
         self.backend = backend
-
-        self.text_settings = {
-            TextOptions.NONE: "None",
-            TextOptions.TRACK_NAME: "Track Name",
-            TextOptions.ARTIST_NAME: "Artist Name",
-            TextOptions.ALBUM_NAME: "Album Name",
-            TextOptions.DEVICE_NAME: "Device Name",
-            TextOptions.VOLUME: "Volume",
-            TextOptions.DURATION: "Duration",
-            TextOptions.ELA_TIME: "Elapsed Time",
-            TextOptions.REM_TIME: "Remaining Time"
-        }
 
         self.settings_path = os.path.join(DATA_PATH, "settings", "plugins", "com_ReneLu_spotifyControl", "actionSettings.json")
 
@@ -479,7 +467,8 @@ class ActionSettings(ActionBase):
 
         if settings[text_type.value + "_text_" + self.actionName] == TextOptions.NONE.value or \
            settings[text_type.value + "_text_" + self.actionName] == "" or \
-           settings[text_type.value + "_text_" + self.actionName] == "None":
+           settings[text_type.value + "_text_" + self.actionName] == "None" or \
+           settings[text_type.value + "_text_" + self.actionName] is None:
             return ""
         if settings[text_type.value + "_text_" + self.actionName] == TextOptions.DEVICE_NAME.value:
             return self.backend.get_active_device_name()
