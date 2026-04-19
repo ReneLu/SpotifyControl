@@ -17,7 +17,8 @@ from loguru import logger as log
 
 class VolSetAction(ActionBase):
 
-    actionName = "vol_set"
+    actionNameStart = "vol_set"
+    actionName = actionNameStart
     backend = None
     last_volume = 0
 
