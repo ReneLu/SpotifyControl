@@ -33,6 +33,9 @@ class ShuffleAction(ActionBase):
         self.actionSettings.set_settings_defaults()
         self.on_tick()
 
+    def on_ready(self) -> None:
+        self.on_tick()
+
     def on_tick(self) -> None:
         if self.backend is None:
             log.error("Spotify backend is not available")

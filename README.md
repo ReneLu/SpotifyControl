@@ -78,6 +78,9 @@ If your Issue isn't in the Issue Board you can create a new Issue from the Templ
 ### Get help with smaller problems
 You can join the stream controller [Discord Server](https://discord.gg/MSyHM8TN3u). There you can get help from others or from me by contacting K!ll3rT. But I don't look into Discord every day.
 
+## You have a problem with the Plugin or a feature is missing?
+### Create an Issue
+First you can check the open [open Issues](https://github.com/ReneLu/SpotifyControl/issues) if your Issue is already known. If your Issue is in that List you can add some more information on the problem if you have one or just a thumbs up so I can see that there are more people with the same problem.
 
 ## Attributions
 This plugin uses the Python Module [spotipy](https://spotipy.readthedocs.io/en/2.25.1/#license)

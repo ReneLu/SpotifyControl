@@ -1,4 +1,5 @@
 # Import StreamController modules
+from GtkHelper.GtkHelper import ComboRow
 from src.backend.PluginManager.ActionBase import ActionBase
 
 # Import action_settings.py from the same folder

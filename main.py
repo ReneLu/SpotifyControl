@@ -36,6 +36,8 @@ class SpotifyControl(PluginBase):
         self.launch_backend(backend_path=backend_path, open_in_terminal=False,
                             venv_path=os.path.join(self.PATH, "backend", '.venv'))
 
+        self._settings_manager = PluginSettings(self)
+
         ## Register actions
         self.shuffle_action_holder = ActionHolder(
             plugin_base = self,
