@@ -23,6 +23,7 @@ class PlayPauseAction(ActionBase):
         super().__init__(*args, **kwargs)
         self.backend = self.plugin_base.backend
         self.has_configuration = True
+        self.actionName = self.actionName + "_" + str(self.input_ident.json_identifier) + "_" + self.page.get_name().replace(" ", "_")
         self.actionSettings = ActionSettings(self.actionName, self.backend)
         self.Texts = Texts
 
