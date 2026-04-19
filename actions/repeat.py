@@ -16,6 +16,7 @@ from loguru import logger as log
 
 class RepeatAction(ActionBase):
 
+    actionNameStart = "repeat"
     actionName = "repeat"
     backend = None
 
