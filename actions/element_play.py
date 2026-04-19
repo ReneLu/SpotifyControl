@@ -112,11 +112,12 @@ class ElementPlayAction(ActionBase):
         if self.backend.is_authed():
             settings = self.actionSettings.get_settings()
             selected_device = settings["device_id_" + self.actionName]
+            uri = self.uri_info.get("uri")
 
-            if self.uri_info["uri"] is None:
+            if uri is None:
                 log.error(f"Invalid Spotify URI: {self.uri_info}")
                 return
-            self.backend.play(selected_device, context_uri=self.uri_info["uri"])
+            self.backend.play(selected_device, context_uri=uri)
 
     def get_config_rows(self) -> list:
         if self.backend.is_authed():
@@ -200,7 +201,9 @@ class ElementPlayAction(ActionBase):
 
         if url != "":
             # Remove old cover from cache
-            self.backend.remove_element_cover_from_cache(self.uri_info["id"])
+            old_uri_id = self.uri_info.get("id")
+            if old_uri_id is not None:
+                self.backend.remove_element_cover_from_cache(old_uri_id)
             uri_info = self.backend.get_uri_from_url(url)
             if not self.is_uri_valid_type(uri_info):
                 log.error(f"Invalid Spotify URL: {url}")
@@ -228,8 +231,13 @@ class ElementPlayAction(ActionBase):
         self.actionSettings.set_settings(settings)
 
     def is_uri_valid_type(self, uri_info: dict[str, str]) -> bool:
-        if uri_info["uri"] is None or uri_info["type"] is None or uri_info["id"] is None or \
-           (uri_info["type"] != "album" and uri_info["type"] != "playlist" and uri_info["type"] != "artist"):
+        uri = uri_info.get("uri")
+        uri_type = uri_info.get("type")
+        uri_id = uri_info.get("id")
+
+        if uri is None or uri_type is None or uri_id is None:
+            return False
+        if uri_type not in ("album", "playlist", "artist"):
             return False
         return True
 
@@ -245,5 +253,7 @@ class ElementPlayAction(ActionBase):
             self.actionSettings.rename_setting(old_action_name, self.actionName)
 
     def on_remove(self) -> None:
-        self.backend.remove_element_cover_from_cache(self.uri_info["id"])
+        uri_id = self.uri_info.get("id")
+        if uri_id is not None:
+            self.backend.remove_element_cover_from_cache(uri_id)
         self.actionSettings.remove_setting(self.actionName)
