@@ -43,7 +43,7 @@ class InfoAction(ActionBase):
             self.set_center_label(self.actionSettings.get_text(self.Texts.MIDDLE))
             self.set_bottom_label(self.actionSettings.get_text(self.Texts.BOTTOM))
 
-            btn_img = self.actionSettings.get_media()
+            btn_img = self.actionSettings.get_media(self.deck_controller.deck.key_image_format()["size"])
             if btn_img is not None:
                 self.set_media(image=btn_img)
             else:

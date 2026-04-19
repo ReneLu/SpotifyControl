@@ -46,7 +46,7 @@ class NextTrackAction(ActionBase):
 
             # Set icon
             icon_path = os.path.join(self.plugin_base.PATH, "assets", "icons8-track-forward-100.png")
-            btn_img = self.actionSettings.get_media(icon_path=icon_path)
+            btn_img = self.actionSettings.get_media(self.deck_controller.deck.key_image_format()["size"], icon_path=icon_path)
             if btn_img is not None:
                 self.set_media(image=btn_img)
             else:

@@ -536,29 +536,31 @@ class ActionSettings(ActionBase):
     def get_second_from_ms(self, ms: int) -> int:
         return int((ms % (1000 * 60)) / 1000)
 
-    def get_media(self, icon_path: str = "", icon_scale: float = 0.75) -> Image.Image:
+    def get_media(self, key_size: tuple[int, int], icon_path: str = "", icon_scale: float = 0.75) -> Image.Image:
         settings = self.get_settings()
         if settings["show_album_cover_" + self.actionName] == True:     # Album Cover should be shown
-            album_cover_path = self.backend.get_album_cover_path()      # Get Album Cover Path
-            if album_cover_path == "":                                  # Check if Album Cover Path is valid
+            cover_path = self.backend.get_current_playing_cover_path()      # Get Album Cover Path
+            if cover_path == "":                                  # Check if Album Cover Path is valid
                 return None
-            album_cover_image = Image.open(album_cover_path)            # Open Album Cover as PIL Image
+            album_cover_image = Image.open(cover_path)            # Open Album Cover as PIL Image
             if album_cover_image is None:                               # Check if Album Cover was opened successfully
                 return None
             if icon_path == "" or settings["show_icon_" + self.actionName] == False:    # If no Icon should be shown, return Album Cover
                 return album_cover_image
             icon = Image.open(icon_path)                                # Open Icon as PIL Image
+            icon = icon.resize(key_size)
             icon = icon.resize((int(icon.width * icon_scale), int(icon.height * icon_scale)))
             if icon is not None:                                        # Check if Icon was opened successfully
-                return self.apply_background(background=album_cover_image, icon=icon) # Apply Icon to Album Cover
+                return self.apply_background(key_size=key_size, background=album_cover_image, icon=icon) # Apply Icon to Album Cover
         elif settings["show_icon_" + self.actionName] == True and icon_path != "":          # Only Icon should be shown
             icon = Image.open(icon_path)                                # Open Icon as PIL Image
+            icon = icon.resize(key_size)
             icon = icon.resize((int(icon.width * icon_scale), int(icon.height * icon_scale)))
             return icon
 
         return None
 
-    def apply_background(self, icon:Image.Image = None, background:Image.Image = None, valign: float = 0, halign: float = 0) -> Image.Image:
+    def apply_background(self, key_size: tuple[int, int], icon:Image.Image = None, background:Image.Image = None, valign: float = 0, halign: float = 0) -> Image.Image:
 
         if background is None or icon is None:
             return None
@@ -569,5 +571,7 @@ class ActionSettings(ActionBase):
         top_margin = int((background.height - icon.height) * (valign + 1) / 2)
 
         background.paste(icon, (left_margin, top_margin), icon)
+
+        background = background.resize(key_size) # Rezie to key size
 
         return background
