@@ -28,6 +28,8 @@ class PrevTrackAction(ActionBase):
         self.actionSettings = ActionSettings(self.actionName, self.backend)
         self.Texts = Texts
 
+        self.has_configuration = True
+
     def on_ready(self) -> None:
         self.actionSettings.set_settings_defaults()
         self.on_tick()

@@ -56,6 +56,8 @@ class ElementPlayAction(ActionBase):
 
         self.connect(signal=Signals.PageRename, callback=self.on_page_rename)
 
+        self.has_configuration = True
+
     def on_ready(self) -> None:
         settings = self.actionSettings.get_settings()
         if "element_url_" + self.actionName in settings and settings["element_url_" + self.actionName] != "":
