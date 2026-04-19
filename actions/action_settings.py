@@ -230,6 +230,15 @@ class ActionSettings(ActionBase):
         """
         return self.icon_toggle
 
+    def get_show_album_cover_element(self):
+        """
+        Get the show album cover toggle element for the config menu
+
+        Returns:
+            Adw.SwitchRow: The show album cover toggle element
+        """
+        return self.album_cover_toggle
+
     def set_settings_defaults(self):
         """
         Set the default settings for the action
