@@ -45,7 +45,7 @@ class ActionSettings(ActionBase):
         TextOptions.ALBUM_NAME: "Album Name",
         TextOptions.DEVICE_NAME: "Device Name",
         TextOptions.VOLUME: "Volume",
-        TextOptions.DURATION: "Duration",
+        TextOptions.DURATION: "Title Duration",
         TextOptions.ELA_TIME: "Elapsed Time",
         TextOptions.REM_TIME: "Remaining Time"
     }
