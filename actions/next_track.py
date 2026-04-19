@@ -17,14 +17,15 @@ from loguru import logger as log
 
 class NextTrackAction(ActionBase):
 
-    actionName = "next_track"
+    actionNameStart = "next_track"
+    actionName = actionNameStart
     backend = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.backend = self.plugin_base.backend
         self.has_configuration = True
-        self.actionName = self.actionName + "_" + str(self.input_ident.json_identifier) + "_" + self.page.get_name().replace(" ", "_")
+        self.actionName = self.actionNameStart + "_" + str(self.input_ident.json_identifier) + "_" + self.page.get_name().replace(" ", "_")
         self.actionSettings = ActionSettings(self.actionName, self.backend)
         self.Texts = Texts
 
