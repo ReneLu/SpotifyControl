@@ -521,7 +521,7 @@ class SpotifyControlBackend(BackendBase):
                         return ""
                 elif element_type == "playlist":
                     info = self.spotifyObject.playlist_cover_image(element_id)
-                    if 'url' in info[0] and len(info[0]['url']) > 0:
+                    if len(info) > 0 and 'url' in info[0] and len(info[0]['url']) > 0:
                         url = info[0]['url']
                     else:
                         log.error("No images found for playlist ID " + str(element_id))
