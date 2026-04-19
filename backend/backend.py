@@ -327,9 +327,9 @@ class SpotifyControlBackend(BackendBase):
         if url.startswith("https://open.spotify.com/"):
             parts = url.split("/")
             if len(parts) >= 5:
-                type = parts[3]
+                item_type = parts[3]
                 id = parts[4].split("?")[0]
-                return { "uri":f"spotify:{type}:{id}", "type": type, "id": id }
+                return { "uri":f"spotify:{item_type}:{id}", "type": item_type, "id": id }
         return {}
 
 
