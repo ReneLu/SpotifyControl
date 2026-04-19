@@ -132,6 +132,36 @@ class ActionSettings(ActionBase):
             json.dump(new_content, f, indent=4)
             f.truncate()
 
+    def remove_setting(self, setting_key_end: str):
+        """
+        Removes a specific setting from the settings file for a given key.
+
+        Args:
+            setting_key_end (str): The ending part of the key of the setting to be removed.
+        """
+        settings = self.get_settings()
+        for setting in list(settings.keys()):
+            if setting.endswith(setting_key_end):
+                del settings[setting]
+
+        self.set_settings(settings)
+
+    def rename_setting(self, old_key_end: str, new_key_end: str):
+        """
+        Renames a specific setting in the settings file for a given key.
+
+        Args:
+            old_key_end (str): The ending part of the key of the setting to be renamed.
+            new_key_end (str): The new ending part of the key of the setting.
+        """
+        settings = self.get_settings()
+        for setting in list(settings.keys()):
+            if setting.endswith(old_key_end):
+                new_key = setting[:-len(old_key_end)] + new_key_end
+                settings[new_key] = settings.pop(setting)
+
+        self.set_settings(settings)
+
     def get_config_rows(self) -> list:
         rows = []
 

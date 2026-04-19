@@ -94,3 +94,12 @@ class VolMuteAction(ActionBase):
         else:
             self.not_authed_label = Gtk.Label(label=self.plugin_base.lm.get("actions.base.not-authed"))
             return [self.not_authed_label]
+
+    def on_page_rename(self, old_name, new_name):
+        if old_name == self.page.get_name():
+            old_action_name = self.actionName
+            self.actionName = self.actionNameStart + "_" + str(self.input_ident.json_identifier) + "_" + new_name.replace(" ", "_")
+            self.actionSettings.rename_setting(old_action_name, self.actionName)
+
+    def on_remove(self) -> None:
+        self.actionSettings.remove_setting(self.actionName)
