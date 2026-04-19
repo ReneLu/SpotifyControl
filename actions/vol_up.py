@@ -73,11 +73,11 @@ class VolUpAction(ActionBase):
     def get_config_rows(self) -> list:
         if self.backend.is_authed():
             rows = self.actionSettings.get_config_rows()
-            
+
             self.vol_chng = Adw.SpinRow.new_with_range(0, 100, 1)
             self.vol_chng.set_title(self.plugin_base.lm.get("actions.vol-up.vol-spin.label"))
             self.vol_chng.set_subtitle(self.plugin_base.lm.get("actions.vol-up.vol-spin.subtitle"))
-    
+
             self.vol_chng.connect("notify::value", self.on_volume_change)
 
             self.set_settings_defaults()
