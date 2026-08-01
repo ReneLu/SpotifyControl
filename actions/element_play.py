@@ -1,7 +1,6 @@
 # Import StreamController modules
 from enum import Enum
 
-import settings
 from src.backend.PluginManager.ActionBase import ActionBase
 
 # Import action_settings.py from the same folder
