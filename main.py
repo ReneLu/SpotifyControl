@@ -20,7 +20,7 @@ from .actions.pause import PauseAction
 from .actions.info import InfoAction
 from .actions.element_play import ElementPlayAction
 
-from .settings import PluginSettings
+from .spotifysettings import PluginSettings
 
 class SpotifyControl(PluginBase):
     def __init__(self):
