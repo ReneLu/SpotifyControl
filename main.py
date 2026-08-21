@@ -39,109 +39,39 @@ class SpotifyControl(PluginBase):
         self._settings_manager = PluginSettings(self)
 
         ## Register actions
-        self.shuffle_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = ShuffleAction,
-            action_id = "dev_ReneLu_SpotifyControl::ShuffleAction",
-            action_name = "Shuffle",
-        )
-        self.add_action_holder(self.shuffle_action_holder)
+        actions = [
+            ("shuffle_action_holder", ShuffleAction, "ShuffleAction", "Shuffle"),
+            ("playpause_action_holder", PlayPauseAction, "PlayPauseAction", "Play / Pause"),
+            ("nexttrack_action_holder", NextTrackAction, "NextTrackAction", "Next Track"),
+            ("prevtrack_action_holder", PrevTrackAction, "PrevTrackAction", "Previous Track"),
+            ("vol_dwn_action_holder", VolDwnAction, "VolDwnAction", "Volume Down"),
+            ("vol_up_action_holder", VolUpAction, "VolUpAction", "Volume Up"),
+            ("vol_mute_action_holder", VolMuteAction, "VolMuteAction", "Volume Mute"),
+            ("repeat_action_holder", RepeatAction, "RepeatAction", "Repeat"),
+            ("vol_set_action_holder", VolSetAction, "VolSetAction", "Volume Set"),
+            ("play_action_holder", PlayAction, "PlayAction", "Play"),
+            ("pause_action_holder", PauseAction, "PauseAction", "Pause"),
+            ("info_action_holder", InfoAction, "InfoAction", "Info"),
+            ("element_play_action_holder", ElementPlayAction, "ElementPlayAction", "Element Play"),
+        ]
 
-        self.playpause_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = PlayPauseAction,
-            action_id = "dev_ReneLu_SpotifyControl::PlayPauseAction",
-            action_name = "Play / Pause",
-        )
-        self.add_action_holder(self.playpause_action_holder)
+        for attribute, action, action_id_suffix, action_name in actions:
+            action_holder = ActionHolder(
+                plugin_base=self,
+                action_base=action,
+                action_id_suffix=action_id_suffix,
+                action_name=action_name,
+            )
+            setattr(self, attribute, action_holder)
+            self.add_action_holder(action_holder)
 
-        self.nexttrack_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = NextTrackAction,
-            action_id = "dev_ReneLu_SpotifyControl::NextTrackAction",
-            action_name = "Next Track",
-        )
-        self.add_action_holder(self.nexttrack_action_holder)
-
-        self.prevtrack_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = PrevTrackAction,
-            action_id = "dev_ReneLu_SpotifyControl::PrevTrackAction",
-            action_name = "Previous Track",
-        )
-        self.add_action_holder(self.prevtrack_action_holder)
-
-        self.vol_dwn_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = VolDwnAction,
-            action_id = "dev_ReneLu_SpotifyControl::VolDwnAction",
-            action_name = "Volume Down",
-        )
-        self.add_action_holder(self.vol_dwn_action_holder)
-
-        self.vol_up_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = VolUpAction,
-            action_id = "dev_ReneLu_SpotifyControl::VolUpAction",
-            action_name = "Volume Up",
-        )
-        self.add_action_holder(self.vol_up_action_holder)
-
-        self.vol_mute_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = VolMuteAction,
-            action_id = "dev_ReneLu_SpotifyControl::VolMuteAction",
-            action_name = "Volume Mute",
-        )
-        self.add_action_holder(self.vol_mute_action_holder)
-
-        self.repeat_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = RepeatAction,
-            action_id = "dev_ReneLu_SpotifyControl::RepeatAction",
-            action_name = "Repeat",
-        )
-        self.add_action_holder(self.repeat_action_holder)
-
-        self.vol_set_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = VolSetAction,
-            action_id = "dev_ReneLu_SpotifyControl::VolSetAction",
-            action_name = "Volume Set",
-        )
-        self.add_action_holder(self.vol_set_action_holder)
-
-        self.play_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = PlayAction,
-            action_id = "dev_ReneLu_SpotifyControl::PlayAction",
-            action_name = "Play",
-        )
-        self.add_action_holder(self.play_action_holder)
-
-        self.pause_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = PauseAction,
-            action_id = "dev_ReneLu_SpotifyControl::PauseAction",
-            action_name = "Pause",
-        )
-        self.add_action_holder(self.pause_action_holder)
-
-        self.info_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = InfoAction,
-            action_id = "dev_ReneLu_SpotifyControl::InfoAction",
-            action_name = "Info",
-        )
-        self.add_action_holder(self.info_action_holder)
-
-        self.element_play_action_holder = ActionHolder(
-            plugin_base = self,
-            action_base = ElementPlayAction,
-            action_id = "dev_ReneLu_SpotifyControl::ElementPlayAction",
-            action_name = "Element Play",
-        )
-        self.add_action_holder(self.element_play_action_holder)
+            # Keep pages created before the plugin ID was corrected working.
+            self.add_action_holder(ActionHolder(
+                plugin_base=self,
+                action_base=action,
+                action_id=f"dev_ReneLu_SpotifyControl::{action_id_suffix}",
+                action_name=action_name,
+            ))
 
         # Register plugin
         self.register(
