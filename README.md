@@ -1,8 +1,15 @@
 # StreamController Spotify Control Plugin
 
+> [!IMPORTANT]
+> This Plugin is deprecated and not further supported. Please use the Spotify Plugin
+> [Deck Essentials for Spotify](https://github.com/GrantAbell/StreamController-Spotify) from GrantAbell.
+> You are free to fork this plugin if you want to continue the development by yourself.
+
 > [!NOTE]
 > This plugin only works with a spotify premium account. Not with a free spotify account.
 > Also an internetconnection is required.
+
+---
 
 ## What can you do with this Plugin?
 
